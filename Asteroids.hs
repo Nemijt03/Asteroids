@@ -25,10 +25,7 @@ data PlayerState = PlayerState {
 data GameLoop = Running | Paused
                 deriving (Show, Eq)
 
-type Assoc k v  = [(k, v)]
-data Inputs = Assoc Key UserAction
-                deriving (Show, Eq)
-data UserAction = TurnLeft | TurnRight | Forward | Backward | Pause
+
                 deriving (Show, Eq)
 handleAction :: UserAction -> State -> State
 handleAction = undefined
