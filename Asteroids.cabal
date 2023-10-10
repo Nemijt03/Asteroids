@@ -36,9 +36,11 @@ license-file:       LICENSE
 
 -- The package author(s).
 author:             Nemjit03
+author:             StefanHerald
 
 -- An email address to which users can send suggestions, bug reports, and patches.
 maintainer:         Tijmenpvis@gmail.com
+maintainer:         s.herald@students.uu.nl
 
 -- A copyright notice.
 -- copyright:
