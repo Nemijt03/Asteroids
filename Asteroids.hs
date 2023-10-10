@@ -1,5 +1,6 @@
 import Graphics.Gloss
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import Graphics.Gloss.Interface.IO.Game
 
 
 data State = State {
@@ -11,6 +12,7 @@ data State = State {
 			timePlayed :: Int,
 			gameLoop :: GameLoop
             }
+            deriving (Show, Eq)
 data PlayerState = PlayerState {
                 playerPosition :: Point,
                 playerFacing :: Vector, -- Normalised vector
@@ -19,10 +21,15 @@ data PlayerState = PlayerState {
                 playerLives :: Int,
                 playerReloadTime :: Int -- will be able to shoot when at 0
                 }
+                deriving (Show, Eq)
 data GameLoop = Running | Paused
+                deriving (Show, Eq)
 
-data Input = Assoc Char UserAction
+type Assoc k v  = [(k, v)]
+data Inputs = Assoc Key UserAction
+                deriving (Show, Eq)
 data UserAction = TurnLeft | TurnRight | Forward | Backward | Pause
+                deriving (Show, Eq)
 handleAction :: UserAction -> State -> State
 handleAction = undefined
 
@@ -31,12 +38,14 @@ addAcceleration = undefined
 
 
 data Enemy = Asteroid | Saucer 
+                deriving (Show, Eq)
 data Asteroid = MkAsteroid {
                 asteroidPosition :: Point, 
                 asteroidSpeed :: Vector,
                 asteroidSize :: Size,
                 asteroidHealth :: Int
                 }
+                deriving (Show, Eq)
 data Saucer = MkSaucer {
                 saucerPosition :: Point,
                 saucerSpeed :: Vector,
@@ -45,7 +54,9 @@ data Saucer = MkSaucer {
                 saucerHealth :: Int,
                 saucerReloadTime :: Int
                 }
+                deriving (Show, Eq)
 data Size = Small | Medium | Large | ExtraLarge
+                deriving (Show, Eq)
 
 shootFromPlayer :: PlayerState -> Projectile
 shootFromPlayer = undefined
@@ -58,14 +69,18 @@ data Projectile = Projectile {
                 projectileSpeed :: Vector,
                 projectileTimeAlive :: Int
                 }
+                deriving (Show, Eq)
 
 
 removeDead :: State -> State
 removeDead = undefined
 
 data Animation = DeathAnimation | SpawnAnimation
-data DeathAnimation = MkDeathAnimation Int Picture
-data SpawnAnimation = MkSpawnAnimation Int Picture
+                deriving (Show, Eq)
+newtype DeathAnimation = MkDeathAnimation Int
+                deriving (Show, Eq)
+newtype SpawnAnimation = MkSpawnAnimation Int
+                deriving (Show, Eq)
 
 -- maybe dus functie voor animation :: Int -> Picture
 
