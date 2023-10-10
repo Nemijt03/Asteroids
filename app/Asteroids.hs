@@ -1,7 +1,11 @@
+module Main where
+
 import Graphics.Gloss
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import Graphics.Gloss.Interface.IO.Game
 
+main :: IO ()
+main = return ()
 
 data State = State {
 			enemies :: [Enemy],
