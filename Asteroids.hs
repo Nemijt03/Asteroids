@@ -25,11 +25,6 @@ data PlayerState = PlayerState {
 data GameLoop = Running | Paused
                 deriving (Show, Eq)
 
-
-                deriving (Show, Eq)
-handleAction :: UserAction -> State -> State
-handleAction = undefined
-
 addAcceleration :: Float -> PlayerState -> PlayerState
 addAcceleration = undefined
 
