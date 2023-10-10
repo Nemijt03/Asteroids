@@ -1,4 +1,5 @@
 import Graphics.Gloss
+import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 data State = State {
@@ -11,12 +12,12 @@ data State = State {
 			gameLoop :: GameLoop
             }
 data PlayerState = PlayerState {
-                position :: Point,
-                facing :: Vec2, -- Normalised vector
-                speed :: Vec2,
-                acceleration :: Vec2,
-                lives :: Int,
-                reloadTime :: Int -- will be able to shoot when at 0
+                playerPosition :: Point,
+                playerFacing :: Vector, -- Normalised vector
+                playerSpeed :: Vector,
+                playerAcceleration :: Vector,
+                playerLives :: Int,
+                playerReloadTime :: Int -- will be able to shoot when at 0
                 }
 data GameLoop = Running | Paused
 
@@ -29,38 +30,50 @@ addAcceleration :: Float -> PlayerState -> PlayerState
 addAcceleration = undefined
 
 
-data Enemy = Asteroid | Saucer
-data Asteroid = Asteroid {
-                position :: Point, 
-                speed :: Vec2,
-                size :: Size,
-                health :: Int
+data Enemy = Asteroid | Saucer 
+data Asteroid = MkAsteroid {
+                asteroidPosition :: Point, 
+                asteroidSpeed :: Vector,
+                asteroidSize :: Size,
+                asteroidHealth :: Int
                 }
-data Saucer = Saucer {
-                position :: Point,
-                speed :: Vec2,
-                acceleration :: Vec2,
-                size :: Size,
-                health :: Int,
-                reloadTime :: Int
+data Saucer = MkSaucer {
+                saucerPosition :: Point,
+                saucerSpeed :: Vector,
+                saucerAcceleration :: Vector,
+                saucerSize :: Size,
+                saucerHealth :: Int,
+                saucerReloadTime :: Int
                 }
 data Size = Small | Medium | Large | ExtraLarge
 
 shootFromPlayer :: PlayerState -> Projectile
-shootFromSaucer :: Saucer -> Projectile
+shootFromPlayer = undefined
+
+shootFromSaucer :: Enemy -> Projectile
+shootFromSaucer = undefined
 
 data Projectile = Projectile {
-                    location :: Point
-                    speed :: Vec2
-                    timeAlive :: Int
-                    }
+                projectilePosition :: Point,
+                projectileSpeed :: Vector,
+                projectileTimeAlive :: Int
+                }
 
 
 removeDead :: State -> State
 removeDead = undefined
 
 data Animation = DeathAnimation | SpawnAnimation
-data DeathAnimation = DeathAnimation Int Picture
-data SpawnAnimation = SpawnAnimation Int Picture
+data DeathAnimation = MkDeathAnimation Int Picture
+data SpawnAnimation = MkSpawnAnimation Int Picture
+
 -- maybe dus functie voor animation :: Int -> Picture
 
+stateToPicture :: State -> Picture
+stateToPicture state = undefined
+
+playerStateToPicture :: PlayerState -> Picture
+playerStateToPicture ps = undefined
+
+movePlayer :: PlayerState -> PlayerState
+movePlayer state = state { playerPosition = playerPosition state PMath.+ playerSpeed state }
