@@ -1,8 +1,7 @@
-module Main where
+module Asteroids where
 
-import Graphics.Gloss
+import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
-import Graphics.Gloss.Interface.IO.Game
 
 main :: IO ()
 main = return ()
@@ -17,20 +16,10 @@ data State = State {
 			gameLoop :: GameLoop
             }
             deriving (Show, Eq)
-data PlayerState = PlayerState {
-                playerPosition :: Point,
-                playerFacing :: Vector, -- Normalised vector
-                playerSpeed :: Vector,
-                playerAcceleration :: Vector,
-                playerLives :: Int,
-                playerReloadTime :: Int -- will be able to shoot when at 0
-                }
-                deriving (Show, Eq)
+
 data GameLoop = Running | Paused
                 deriving (Show, Eq)
 
-addAcceleration :: Float -> PlayerState -> PlayerState
-addAcceleration = undefined
 
 
 data Enemy = Asteroid | Saucer 
@@ -54,19 +43,9 @@ data Saucer = MkSaucer {
 data Size = Small | Medium | Large | ExtraLarge
                 deriving (Show, Eq)
 
-shootFromPlayer :: PlayerState -> Projectile
-shootFromPlayer = undefined
 
 shootFromSaucer :: Enemy -> Projectile
 shootFromSaucer = undefined
-
-data Projectile = Projectile {
-                projectilePosition :: Point,
-                projectileSpeed :: Vector,
-                projectileTimeAlive :: Int
-                }
-                deriving (Show, Eq)
-
 
 removeDead :: State -> State
 removeDead = undefined
@@ -80,10 +59,15 @@ newtype SpawnAnimation = MkSpawnAnimation Int
 -- maybe dus functie voor animation :: Int -> Picture
 
 stateToPicture :: State -> Picture
-stateToPicture state = undefined
+stateToPicture state = 
+    Pictures 
+        [
+            playerStateToPicture (playerState state),
+            enemiesToPicture
+        ]
 
-playerStateToPicture :: PlayerState -> Picture
-playerStateToPicture ps = undefined
+enemiesToPicture :: [Enemy] -> Picture
+enemiesToPicture = Pictures enemiesToPictures
 
-movePlayer :: PlayerState -> PlayerState
-movePlayer state = state { playerPosition = playerPosition state PMath.+ playerSpeed state }
+enemiesToPictures :: [Enemy] -> [Picture] -- These functions van be implemented in the Enemy.hs file
+enemiesToPictures = undefined

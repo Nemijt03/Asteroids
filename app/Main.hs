@@ -1,4 +1,6 @@
 module Main where
 
+import Imports
+
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = display FullScreen black Blank
