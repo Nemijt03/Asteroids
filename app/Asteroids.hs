@@ -6,7 +6,8 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 main :: IO ()
 main = return ()
 
-data State = State {
+data State = State {    -- All positions of the State will be defined in a 16:9 field, 
+                        -- maybe 720p (1280x720) to create easy conversion on HD screens.
 			enemies :: [Enemy],
 			projectiles :: [Projectile],
 			animations :: [Animation],
@@ -19,8 +20,6 @@ data State = State {
 
 data GameLoop = Running | Paused
                 deriving (Show, Eq)
-
-
 
 data Enemy = Asteroid | Saucer 
                 deriving (Show, Eq)
@@ -62,8 +61,11 @@ stateToPicture :: State -> Picture
 stateToPicture state = 
     Pictures 
         [
-            playerStateToPicture (playerState state),
-            enemiesToPicture
+            enemiesToPicture (enemies state),
+            projectilesToPicture (projectiles state),
+            animationsToPicture (animations state),
+            playerStateToPicture Graphics.Gloss.Interface.Environment.getScreenSize (playerState state),
+            scoreToPicture (score state)
         ]
 
 enemiesToPicture :: [Enemy] -> Picture

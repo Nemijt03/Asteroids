@@ -1,6 +1,7 @@
 module Player where
 
 import Projectile
+import ScreenLogic
 import Imports 
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
@@ -18,20 +19,13 @@ addAcceleration :: Float -> PlayerState -> PlayerState
 addAcceleration = undefined
 
 updatePlayerState :: PlayerState -> PlayerState
-updatePlayerState s = s { 
-    playerPosition = mapPlus playerPosition playerSpeed s,
-    playerSpeed = mapPlus playerSpeed playerAcceleration s,
-    playerReloadTime = playerReloadTime s - 1 
-    }
+updatePlayerState s =   s {
+                            playerPosition = wrap (mapPlus playerPosition playerSpeed s),
+                            playerSpeed = mapPlus playerSpeed playerAcceleration s,
+                            playerReloadTime = playerReloadTime s - 1  
+                            -- Add functionality for gradually decreasing the acceleration
+                        }
 
-updateProjectileState :: Projectile -> Projectile
-updateProjectileState p = p {
-    projectilePosition = mapPlus projectilePosition projectileSpeed p,
-    projectileTimeAlive = projectileTimeAlive p - 1
-}
-
-mapPlus :: (a -> Vector) -> (a -> Vector) -> a -> Vector
-mapPlus f1 f2 s = f1 s PMath.+ f2 s
 
 shootFromPlayer :: PlayerState -> Projectile
 shootFromPlayer s = Projectile {
@@ -40,5 +34,9 @@ shootFromPlayer s = Projectile {
                                     projectileTimeAlive = 10
                                 }
 
-playerStateToPicture :: PlayerState -> Picture
-playerStateToPicture ps = playerPosition 
+playerStateToPicture :: (Int, Int) -> PlayerState -> Picture -> Picture
+playerStateToPicture (w, h) ps bmp = Translate dx dy (bmp)
+    where 
+        centre@(cx, cy) = (w `div` 2, h `div` 2)
+        dx = 1
+        dy = 1
