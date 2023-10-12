@@ -1,7 +1,6 @@
 module Projectile where
 
 import Imports
-import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 data Projectile = Projectile {
                 projectilePosition :: Point,

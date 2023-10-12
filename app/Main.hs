@@ -1,6 +1,6 @@
 module Main where
 
-import Player
+import Imports
 
 main :: IO ()
-main = putStrLn "Hello, Haskell!"
+main = display FullScreen black Blank

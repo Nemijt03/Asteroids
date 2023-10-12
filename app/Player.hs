@@ -1,7 +1,7 @@
 module Player where
 
 import Projectile
-import Imports
+import Imports 
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 data PlayerState = PlayerState {
@@ -27,22 +27,18 @@ updatePlayerState s = s {
 updateProjectileState :: Projectile -> Projectile
 updateProjectileState p = p {
     projectilePosition = mapPlus projectilePosition projectileSpeed p,
-    projectileTimeAlive = projectileTimeAlive - 1
+    projectileTimeAlive = projectileTimeAlive p - 1
 }
 
-mapPlus :: (PlayerState -> Vector) -> (PlayerState -> Vector) -> PlayerState -> Vector
+mapPlus :: (a -> Vector) -> (a -> Vector) -> a -> Vector
 mapPlus f1 f2 s = f1 s PMath.+ f2 s
-
-instance Num Vector where
-    (a1, a2) + (b1, b2) = (a1 + b1, a2 + b2)
-    (a1, a2) - (b1, b2) = (a1 - b1, a2 - b2)
-    (a1, a2) * (b1, b2) = (a1 * b1, a2 * b2)
-    negate (a1, a2) = ((-1) * a1, (-1) * a2)
-
 
 shootFromPlayer :: PlayerState -> Projectile
 shootFromPlayer s = Projectile {
-                                    projectilePosition = playerPosition s + playerFacing s * 2,
-                                    projectileSpeed = playerFacing s * 5,
+                                    projectilePosition = playerPosition s PMath.+ 2 PMath.* playerFacing s,
+                                    projectileSpeed = 5 PMath.* playerFacing s,
                                     projectileTimeAlive = 10
                                 }
+
+playerStateToPicture :: PlayerState -> Picture
+playerStateToPicture ps = playerPosition 

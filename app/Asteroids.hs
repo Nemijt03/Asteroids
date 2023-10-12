@@ -1,7 +1,7 @@
 module Asteroids where
 
-import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import Imports
+import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 main :: IO ()
 main = return ()
@@ -59,7 +59,15 @@ newtype SpawnAnimation = MkSpawnAnimation Int
 -- maybe dus functie voor animation :: Int -> Picture
 
 stateToPicture :: State -> Picture
-stateToPicture state = undefined
+stateToPicture state = 
+    Pictures 
+        [
+            playerStateToPicture (playerState state),
+            enemiesToPicture
+        ]
 
-playerStateToPicture :: PlayerState -> Picture
-playerStateToPicture ps = undefined
+enemiesToPicture :: [Enemy] -> Picture
+enemiesToPicture = Pictures enemiesToPictures
+
+enemiesToPictures :: [Enemy] -> [Picture] -- These functions van be implemented in the Enemy.hs file
+enemiesToPictures = undefined
