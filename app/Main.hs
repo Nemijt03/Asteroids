@@ -1,8 +1,10 @@
 module Main where
 
 import Imports
+import Asteroids
 
 main :: IO ()
 main = do
     x <- loadBMP "images\\ship.bmp"
-    display FullScreen black x
+    y <- getScreenSize
+    display FullScreen black (stateToPicture standardState x y)

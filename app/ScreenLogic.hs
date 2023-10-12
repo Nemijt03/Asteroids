@@ -1,10 +1,6 @@
 module ScreenLogic where
 
--- import Imports
-import Graphics.Gloss
-import Graphics.Gloss.Interface.IO.Game
-import Graphics.Gloss.Data.Point
-import Data.Maybe
+import Imports
 
 screen :: (Float, Float)
 screen = (1280, 720)

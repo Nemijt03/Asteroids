@@ -34,9 +34,11 @@ shootFromPlayer s = Projectile {
                                     projectileTimeAlive = 10
                                 }
 
+-- the first argument is the size of the screen (as measured by the getScreenSize function)
 playerStateToPicture :: (Int, Int) -> PlayerState -> Picture -> Picture
-playerStateToPicture (w, h) ps bmp = Translate dx dy (bmp)
+playerStateToPicture (w, h) ps bmp = Rotate rotation (Translate dx dy (bmp))
     where 
         centre@(cx, cy) = (w `div` 2, h `div` 2)
-        dx = 1
+        dx = 1 -- relative to playerPosition and (w, h)
         dy = 1
+        rotation = radToDeg (argV (playerFacing ps))
