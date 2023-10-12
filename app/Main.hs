@@ -3,4 +3,6 @@ module Main where
 import Imports
 
 main :: IO ()
-main = display FullScreen black Blank
+main = do
+    x <- loadBMP "images\\ship.bmp"
+    display FullScreen black x
