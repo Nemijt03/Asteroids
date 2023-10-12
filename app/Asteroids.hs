@@ -1,8 +1,7 @@
-module Main where
+module Asteroids where
 
-import Graphics.Gloss
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
-import Graphics.Gloss.Interface.IO.Game
+import Imports
 
 main :: IO ()
 main = return ()
@@ -17,20 +16,10 @@ data State = State {
 			gameLoop :: GameLoop
             }
             deriving (Show, Eq)
-data PlayerState = PlayerState {
-                playerPosition :: Point,
-                playerFacing :: Vector, -- Normalised vector
-                playerSpeed :: Vector,
-                playerAcceleration :: Vector,
-                playerLives :: Int,
-                playerReloadTime :: Int -- will be able to shoot when at 0
-                }
-                deriving (Show, Eq)
+
 data GameLoop = Running | Paused
                 deriving (Show, Eq)
 
-addAcceleration :: Float -> PlayerState -> PlayerState
-addAcceleration = undefined
 
 
 data Enemy = Asteroid | Saucer 
@@ -54,19 +43,9 @@ data Saucer = MkSaucer {
 data Size = Small | Medium | Large | ExtraLarge
                 deriving (Show, Eq)
 
-shootFromPlayer :: PlayerState -> Projectile
-shootFromPlayer = undefined
 
 shootFromSaucer :: Enemy -> Projectile
 shootFromSaucer = undefined
-
-data Projectile = Projectile {
-                projectilePosition :: Point,
-                projectileSpeed :: Vector,
-                projectileTimeAlive :: Int
-                }
-                deriving (Show, Eq)
-
 
 removeDead :: State -> State
 removeDead = undefined
@@ -84,6 +63,3 @@ stateToPicture state = undefined
 
 playerStateToPicture :: PlayerState -> Picture
 playerStateToPicture ps = undefined
-
-movePlayer :: PlayerState -> PlayerState
-movePlayer state = state { playerPosition = playerPosition state PMath.+ playerSpeed state }
