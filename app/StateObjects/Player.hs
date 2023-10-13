@@ -18,8 +18,8 @@ data PlayerState = PlayerState {
 addAcceleration :: Float -> PlayerState -> PlayerState
 addAcceleration = undefined
 
-updatePlayerState :: PlayerState -> PlayerState
-updatePlayerState s =   s {
+stepPlayerState :: PlayerState -> PlayerState
+stepPlayerState s =   s {
                             playerPosition = wrap (mapPlus playerPosition playerSpeed s),
                             playerSpeed = mapPlus playerSpeed playerAcceleration s,
                             playerReloadTime = playerReloadTime s - 1  
@@ -38,7 +38,6 @@ shootFromPlayer s = Projectile {
 playerStateToPicture :: (Int, Int) -> PlayerState -> Picture -> Picture
 playerStateToPicture (w, h) ps bmp = Rotate rotation (Translate dx dy (bmp))
     where 
-        centre@(cx, cy) = (w `div` 2, h `div` 2)
-        dx = 1 -- relative to playerPosition and (w, h)
-        dy = 1
+        (cx, cy) = (w `div` 2, h `div` 2)
+        (dx, dy) = playerPosition ps PMath.- (fromIntegral cx, fromIntegral cy)
         rotation = radToDeg (argV (playerFacing ps))

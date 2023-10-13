@@ -71,6 +71,9 @@ executable Asteroids
                       Projectile
                       ScreenLogic
                       Asteroids
+                      HandleInputs
+                      Enemy
+                      Animation
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
