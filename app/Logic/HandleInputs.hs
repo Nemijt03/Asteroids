@@ -22,3 +22,4 @@ updateInputs c u = foldr f e
                     | otherwise = (x,y) : xs 
         e = []
 data UserAction = TurnLeft | TurnRight | Forward | Backward | Pause
+            deriving (Eq, Show)

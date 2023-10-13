@@ -1,6 +1,5 @@
 module Player where
 
-import Projectile
 import ScreenLogic
 import Imports 
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
@@ -16,7 +15,7 @@ data PlayerState = PlayerState {
                 deriving (Show, Eq)
 
 addAcceleration :: Float -> PlayerState -> PlayerState
-addAcceleration = undefined
+addAcceleration f ps = ps { playerAcceleration = playerFacing ps}
 
 stepPlayerState :: PlayerState -> PlayerState
 stepPlayerState s =   s {
@@ -26,13 +25,6 @@ stepPlayerState s =   s {
                             -- Add functionality for gradually decreasing the acceleration
                         }
 
-
-shootFromPlayer :: PlayerState -> Projectile
-shootFromPlayer s = Projectile {
-                                    projectilePosition = playerPosition s PMath.+ 2 PMath.* playerFacing s,
-                                    projectileSpeed = 5 PMath.* playerFacing s,
-                                    projectileTimeAlive = 10
-                                }
 
 -- the first argument is the size of the screen (as measured by the getScreenSize function)
 playerStateToPicture :: (Int, Int) -> PlayerState -> Picture -> Picture

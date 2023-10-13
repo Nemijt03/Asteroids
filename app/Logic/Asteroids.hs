@@ -8,28 +8,26 @@ import State
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
-shootFromSaucer :: Enemy -> Projectile
-shootFromSaucer = undefined
-
-removeDead :: State -> State
-removeDead = undefined
+removeDeadEnemies :: State -> State
+removeDeadEnemies = undefined
 
 
-stateToPicture :: Picture -> (Int, Int) -> State -> Picture
+stateToPicture :: Picture -> (Int, Int) -> State -> IO Picture
 stateToPicture playerBmp size state = 
-    Pictures 
+    return (Pictures 
         [
             -- enemiesToPicture (enemies state),
             -- projectilesToPicture (projectiles state),
             -- animationsToPicture (animations state),
             playerStateToPicture size (playerState state) playerBmp --,
             -- scoreToPicture (score state)
-        ]
+        ])
 
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
-step secs state = stepGameState state
+step secs state = return (stepGameState state)
+            where s = secs
 
 stepGameState :: State -> State
 stepGameState s = s   {
@@ -53,15 +51,15 @@ inputKey _ s = s
 
 
 handleAction :: UserAction -> State -> State
-handleAction ua s   | ua == TurnLeft = rotate (-1.5708)
-                    | ua == TurnRight = rotate 1.5708
+handleAction ua s   | ua == TurnLeft = rotatePlayer (-1.5708)
+                    | ua == TurnRight = rotatePlayer 1.5708
                     | ua == Forward = accelerate 10
-                    | ua == Backward = accelerate -10
+                    | ua == Backward = accelerate (-10)
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
                     where 
                         ps = playerState s
                         chngPs x = s {playerState = x}
-                        rotate rotation = chngPs (ps {playerFacing = rotation `rotateV` playerFacing ps})
+                        rotatePlayer rotation = chngPs (ps {playerFacing = rotation `rotateV` playerFacing ps})
                         accelerate acceleration = chngPs (addAcceleration acceleration ps)

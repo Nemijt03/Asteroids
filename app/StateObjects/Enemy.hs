@@ -1,5 +1,7 @@
 module Enemy where
 
+import Imports
+
 data Enemy = Asteroid | Saucer 
                 deriving (Show, Eq)
 data Asteroid = MkAsteroid {
