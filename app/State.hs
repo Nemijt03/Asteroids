@@ -5,6 +5,7 @@ import Imports
 import Projectile
 import Animation
 import Enemy
+import HandleInputs
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
