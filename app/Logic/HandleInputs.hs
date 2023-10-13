@@ -13,13 +13,18 @@ standardInputs = [(Char 'a'         , TurnLeft  ),
                 (SpecialKey KeyEsc, Pause    )]
 
 search :: Key -> Inputs -> UserAction
-search c list = head [x | (y,x) <- list, y == c]
+search key list | null userActions = None
+                | otherwise = head userActions
+                where
+                    userActions = [x | (y,x) <- list, y == key]
 
 updateInputs :: Key -> UserAction -> Inputs -> Inputs
-updateInputs c u = foldr f e
+updateInputs newKey ua = foldr f e
     where
-        f (x, y) xs | y == u    = (c,y) : xs
-                    | otherwise = (x,y) : xs 
+        f (oldKey, ua1) xs | ua1 == ua   = (newKey, ua1) : xs
+                           | otherwise   = (oldKey, ua1) : xs 
         e = []
-data UserAction = TurnLeft | TurnRight | Forward | Backward | Pause
+
+
+data UserAction = TurnLeft | TurnRight | Forward | Backward | Pause | None
             deriving (Eq, Show)

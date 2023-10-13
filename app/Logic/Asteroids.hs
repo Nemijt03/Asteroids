@@ -2,10 +2,9 @@ module Asteroids where
 
 import Imports
 import Player
-import Projectile
 import HandleInputs
 import State
-import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+-- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 removeDeadEnemies :: State -> State
@@ -46,7 +45,7 @@ input :: Event -> State -> IO State
 input e s = return (inputKey e s)
 
 inputKey :: Event -> State -> State
-inputKey (EventKey key _ _ _) s = handleAction (search key (inputs s)) s
+inputKey (EventKey key Down _ _) s = handleAction (search key (inputs s)) s
 inputKey _ s = s
 
 
@@ -58,6 +57,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (-1.5708)
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
+                    | otherwise = s
                     where 
                         ps = playerState s
                         chngPs x = s {playerState = x}
