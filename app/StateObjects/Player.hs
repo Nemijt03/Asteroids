@@ -18,8 +18,8 @@ data PlayerState = PlayerState {
 addAcceleration :: Float -> PlayerState -> PlayerState
 addAcceleration = undefined
 
-updatePlayerState :: PlayerState -> PlayerState
-updatePlayerState s =   s {
+stepPlayerState :: PlayerState -> PlayerState
+stepPlayerState s =   s {
                             playerPosition = wrap (mapPlus playerPosition playerSpeed s),
                             playerSpeed = mapPlus playerSpeed playerAcceleration s,
                             playerReloadTime = playerReloadTime s - 1  
@@ -34,9 +34,10 @@ shootFromPlayer s = Projectile {
                                     projectileTimeAlive = 10
                                 }
 
+-- the first argument is the size of the screen (as measured by the getScreenSize function)
 playerStateToPicture :: (Int, Int) -> PlayerState -> Picture -> Picture
-playerStateToPicture (w, h) ps bmp = Translate dx dy (bmp)
+playerStateToPicture (w, h) ps bmp = Rotate rotation (Translate dx dy (bmp))
     where 
-        centre@(cx, cy) = (w `div` 2, h `div` 2)
-        dx = 1
-        dy = 1
+        (cx, cy) = (w `div` 2, h `div` 2)
+        (dx, dy) = playerPosition ps PMath.- (fromIntegral cx, fromIntegral cy)
+        rotation = radToDeg (argV (playerFacing ps))
