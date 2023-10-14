@@ -28,8 +28,9 @@ stepPlayerState ps =   ps {
 
 -- the first argument is the size of the screen (as measured by the getScreenSize function)
 playerStateToPicture :: (Int, Int) -> PlayerState -> Picture -> Picture
-playerStateToPicture (w, h) ps bmp = Translate dx dy ( Rotate rotation (bmp))
+playerStateToPicture (w, h) ps bmp = Translate dx dy ( Rotate rotation bmp)
     where 
         (cx, cy) = (w `div` 2, h `div` 2)
-        (dx, dy) = playerPosition ps PMath.- (fromIntegral cx, fromIntegral cy)
+        (dx, dy) = (dx', fromIntegral h - dy')
+        (dx', dy') = playerPosition ps PMath.- (fromIntegral cx, fromIntegral cy)
         rotation = radToDeg (argV (playerFacing ps))
