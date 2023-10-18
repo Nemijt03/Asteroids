@@ -4,24 +4,29 @@ import Imports
 import Player
 import HandleInputs
 import State
+import Player (playerStateToPicture)
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 removeDeadEnemies :: State -> State
 removeDeadEnemies = undefined
 
+stateToPicture :: State -> IO Picture
+stateToPicture state = 
+    do
+        --enemies <- enemiesToPicture (enemies state)
+        --projectiles <- projectilesToPicture (projectiles state)
+        --animations <- animationsToPicture (animations state)
+        player <- playerStateToPicture (playerState state)
+        --score <- scoreToPicture (score state)
 
-stateToPicture :: Picture -> (Int, Int) -> State -> IO Picture
-stateToPicture playerBmp size state = 
-    return (Pictures 
-        [
-            -- enemiesToPicture (enemies state),
-            -- projectilesToPicture (projectiles state),
-            -- animationsToPicture (animations state),
-            playerStateToPicture size (playerState state) playerBmp --,
-            -- scoreToPicture (score state)
-        ])
-
+        return (Pictures [
+            --enemies,
+            --projectiles,
+            --animations,
+            player--,
+            --score
+            ])
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
