@@ -12,8 +12,12 @@ standardInputs = [(Char 'a'         , TurnLeft  ),
                 (Char 's'         , Backward ), 
                 (SpecialKey KeyEsc, Pause    )]
 
-search :: Key -> Inputs -> UserAction
-search c list = head [x | (y,x) <- list, y == c]
+search :: Key -> Inputs -> Maybe UserAction --if the key is not in Inputs, it should return nothing.
+search c list = foldr f Nothing
+    where
+        f (k, u) may = case may of
+            Nothing -> if c == k then Just c else Nothing
+            _       -> may
 
 updateInputs :: Key -> UserAction -> Inputs -> Inputs
 updateInputs c u = foldr f e
