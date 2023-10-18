@@ -27,7 +27,7 @@ stateToPicture playerBmp size state =
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
 step secs state = return (stepGameState state)
-            where s = secs
+            where s = secs --loose definition
 
 stepGameState :: State -> State
 stepGameState s = s   {
@@ -51,7 +51,7 @@ inputKey _ s = s
 
 
 handleAction :: UserAction -> State -> State
-handleAction ua s   | ua == TurnLeft = rotatePlayer (-1.5708)
+handleAction ua s   | ua == TurnLeft = rotatePlayer (-1.5708) --perhaps this should be a case function. Also, though there is no real danger, there is no catch if ua does not match
                     | ua == TurnRight = rotatePlayer 1.5708
                     | ua == Forward = accelerate 10
                     | ua == Backward = accelerate (-10)
