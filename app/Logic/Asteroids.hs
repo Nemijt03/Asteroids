@@ -31,7 +31,7 @@ stateToPicture state =
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
 step secs state = return (stepGameState state)
-            where s = secs
+            where s = secs --loose definition
 
 stepGameState :: State -> State
 stepGameState s = s   {

@@ -21,6 +21,11 @@ data Enemy = MkAsteroid {
 data Size = Small | Medium | Large | ExtraLarge
                 deriving (Show, Eq)
 
+type SizeAssoc = Assoc Size Int
+
+standardSize :: SizeAssoc
+standardSize = [(Small, 10), (Medium, 25), (Large, 40), (ExtraLarge, 60)]
+
 enemiesToPicture :: [Enemy] -> Picture
 enemiesToPicture es = Pictures (enemiesToPictures es)
 
