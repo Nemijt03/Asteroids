@@ -55,10 +55,10 @@ inputKey _ s = s
 
 
 handleAction :: UserAction -> State -> State
-handleAction ua s   | ua == TurnLeft = rotatePlayer (-1.5708)
-                    | ua == TurnRight = rotatePlayer 1.5708
-                    | ua == Forward = accelerate 10
-                    | ua == Backward = accelerate (-10)
+handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
+                    | ua == TurnRight = rotatePlayer (degToRad 90)
+                    | ua == Forward = accelerate 3
+                    | ua == Backward = accelerate (-3)
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
