@@ -1,7 +1,7 @@
 module Player where
 
 import ScreenLogic
-import Imports 
+import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 data PlayerState = PlayerState {
@@ -10,7 +10,7 @@ data PlayerState = PlayerState {
                 playerSpeed :: Vector,
                 playerAcceleration :: Vector,
                 playerLives :: Int,
-                playerReloadTime :: Int -- will be able to shoot when at 0
+                playerReloadTime :: Float -- will be able to shoot when at 0
                 }
                 deriving (Show, Eq)
 
@@ -22,19 +22,19 @@ stepPlayerState ps =   ps {
                             playerPosition = wrap (mapPlus playerPosition playerSpeed ps),
                             playerSpeed = mapPlus playerSpeed playerAcceleration ps,
                             playerReloadTime = playerReloadTime ps - 1,
-                            playerAcceleration = 0.1 PMath.* playerAcceleration ps 
+                            playerAcceleration = 0.02 PMath.* playerAcceleration ps
                         }
 
 
--- the first argument is the size of the screen (as measured by the getScreenSize function)
 playerStateToPicture :: PlayerState -> IO Picture
 playerStateToPicture ps = do
                     bmp <- loadBMP "images\\ship32.bmp"
                     (w, h) <- getScreenSize
                     let bmp1 = Rotate 90 bmp
                         (cx, cy) = (w `div` 2, h `div` 2)
-                        (dx', dy') = playerPosition ps PMath.- (fromIntegral cx, fromIntegral cy)
-                        (dx, dy) = (dx', {-fromIntegral h - -}dy')
+                        pos = second (fromIntegral h -) (playerPosition ps)
+                        (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
                         rotation = radToDeg (argV (playerFacing ps))
 
                     return (Translate dx dy ( Rotate rotation bmp1))
+                    -- return (Pictures [Color white (Text (show (playerPosition ps))), Translate 0 100 (Color white (Text (show dx')))])

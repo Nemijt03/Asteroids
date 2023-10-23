@@ -2,23 +2,21 @@ module Enemy where
 
 import Imports
 
-data Enemy = Asteroid | Saucer 
-                deriving (Show, Eq)
-data Asteroid = MkAsteroid {
+data Enemy = MkAsteroid {
                 asteroidPosition :: Point, 
                 asteroidSpeed :: Vector,
                 asteroidSize :: Size,
                 asteroidHealth :: Int
-                }
-                deriving (Show, Eq)
-data Saucer = MkSaucer {
+            } 
+            | 
+            MkSaucer {
                 saucerPosition :: Point,
                 saucerSpeed :: Vector,
                 saucerAcceleration :: Vector,
                 saucerSize :: Size,
                 saucerHealth :: Int,
-                saucerReloadTime :: Int
-                }
+                saucerReloadTime :: Float
+            }
                 deriving (Show, Eq)
 data Size = Small | Medium | Large | ExtraLarge
                 deriving (Show, Eq)
