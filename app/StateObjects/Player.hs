@@ -1,7 +1,7 @@
 module Player where
 
 import ScreenLogic
-import Imports 
+import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 data PlayerState = PlayerState {
@@ -10,26 +10,31 @@ data PlayerState = PlayerState {
                 playerSpeed :: Vector,
                 playerAcceleration :: Vector,
                 playerLives :: Int,
-                playerReloadTime :: Int -- will be able to shoot when at 0
+                playerReloadTime :: Float -- will be able to shoot when at 0
                 }
                 deriving (Show, Eq)
 
 addAcceleration :: Float -> PlayerState -> PlayerState
-addAcceleration f ps = ps { playerAcceleration = playerFacing ps}
+addAcceleration f ps = ps { playerAcceleration = f PMath.* playerFacing ps}
 
 stepPlayerState :: PlayerState -> PlayerState
-stepPlayerState s =   s {
-                            playerPosition = wrap (mapPlus playerPosition playerSpeed s),
-                            playerSpeed = mapPlus playerSpeed playerAcceleration s,
-                            playerReloadTime = playerReloadTime s - 1  
-                            -- Add functionality for gradually decreasing the acceleration
+stepPlayerState ps =   ps {
+                            playerPosition = wrap (mapPlus playerPosition playerSpeed ps),
+                            playerSpeed = mapPlus playerSpeed playerAcceleration ps,
+                            playerReloadTime = playerReloadTime ps - 1,
+                            playerAcceleration = 0.02 PMath.* playerAcceleration ps
                         }
 
 
--- the first argument is the size of the screen (as measured by the getScreenSize function)
-playerStateToPicture :: (Int, Int) -> PlayerState -> Picture -> Picture
-playerStateToPicture (w, h) ps bmp = Rotate rotation (Translate dx dy (bmp))
-    where 
-        (cx, cy) = (w `div` 2, h `div` 2)
-        (dx, dy) = playerPosition ps PMath.- (fromIntegral cx, fromIntegral cy)
-        rotation = radToDeg (argV (playerFacing ps))
+playerStateToPicture :: PlayerState -> IO Picture
+playerStateToPicture ps = do
+                    bmp <- loadBMP "images\\ship32.bmp"
+                    (w, h) <- getScreenSize
+                    let bmp1 = Rotate 90 bmp
+                        (cx, cy) = (w `div` 2, h `div` 2)
+                        pos = second (fromIntegral h -) (playerPosition ps)
+                        (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
+                        rotation = radToDeg (argV (playerFacing ps))
+
+                    return (Translate dx dy ( Rotate rotation bmp1))
+                    -- return (Pictures [Color white (Text (show (playerPosition ps))), Translate 0 100 (Color white (Text (show dx')))])

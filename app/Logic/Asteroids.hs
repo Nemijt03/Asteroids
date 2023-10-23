@@ -2,27 +2,31 @@ module Asteroids where
 
 import Imports
 import Player
-import Projectile
 import HandleInputs
 import State
-import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import Player (playerStateToPicture)
+-- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 removeDeadEnemies :: State -> State
 removeDeadEnemies = undefined
 
+stateToPicture :: State -> IO Picture
+stateToPicture state = 
+    do
+        --enemies <- enemiesToPicture (enemies state)
+        --projectiles <- projectilesToPicture (projectiles state)
+        --animations <- animationsToPicture (animations state)
+        player <- playerStateToPicture (playerState state)
+        --score <- scoreToPicture (score state)
 
-stateToPicture :: Picture -> (Int, Int) -> State -> IO Picture
-stateToPicture playerBmp size state = 
-    return (Pictures 
-        [
-            -- enemiesToPicture (enemies state),
-            -- projectilesToPicture (projectiles state),
-            -- animationsToPicture (animations state),
-            playerStateToPicture size (playerState state) playerBmp --,
-            -- scoreToPicture (score state)
-        ])
-
+        return (Pictures [
+            --enemies,
+            --projectiles,
+            --animations,
+            player--,
+            --score
+            ])
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
@@ -46,18 +50,19 @@ input :: Event -> State -> IO State
 input e s = return (inputKey e s)
 
 inputKey :: Event -> State -> State
-inputKey (EventKey key _ _ _) s = handleAction (search key (inputs s)) s
+inputKey (EventKey key Down _ _) s = handleAction (search key (inputs s)) s
 inputKey _ s = s
 
 
 handleAction :: UserAction -> State -> State
-handleAction ua s   | ua == TurnLeft = rotatePlayer (-1.5708) --perhaps this should be a case function. Also, though there is no real danger, there is no catch if ua does not match
-                    | ua == TurnRight = rotatePlayer 1.5708
-                    | ua == Forward = accelerate 10
-                    | ua == Backward = accelerate (-10)
+handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
+                    | ua == TurnRight = rotatePlayer (degToRad 90)
+                    | ua == Forward = accelerate 3
+                    | ua == Backward = accelerate (-3)
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
+                    | otherwise = s
                     where 
                         ps = playerState s
                         chngPs x = s {playerState = x}

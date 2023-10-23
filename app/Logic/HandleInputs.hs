@@ -5,7 +5,7 @@ import Graphics.Gloss.Interface.IO.Game
 
 type Inputs = Assoc Key UserAction
 
-data UserAction = TurnLeft | TurnRight | Forward | Backward | Pause
+data UserAction = TurnLeft | TurnRight | Forward | Backward | Pause | None
             deriving (Eq, Show)
 
 standardInputs :: Inputs
@@ -15,3 +15,16 @@ standardInputs = [(Char 'a'         , TurnLeft  ),
                 (Char 's'         , Backward ), 
                 (SpecialKey KeyEsc, Pause    )]
 
+
+search :: Key -> Inputs -> UserAction
+search key list | null userActions = None
+                | otherwise = head userActions
+                where
+                    userActions = [x | (y,x) <- list, y == key]
+
+updateInputs :: Key -> UserAction -> Inputs -> Inputs
+updateInputs newKey ua = foldr f e
+    where
+        f (oldKey, ua1) xs | ua1 == ua   = (newKey, ua1) : xs
+                           | otherwise   = (oldKey, ua1) : xs 
+        e = []
