@@ -1,6 +1,7 @@
 module Enemy where
 
 import Imports
+import Assoc
 
 data Enemy = MkAsteroid {
                 asteroidPosition :: Point, 
