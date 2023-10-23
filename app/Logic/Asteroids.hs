@@ -4,7 +4,6 @@ import Imports
 import Player
 import HandleInputs
 import State
-import Player (playerStateToPicture)
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
