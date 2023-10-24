@@ -4,8 +4,9 @@ module Imports (module Graphics.Gloss,
                 module Data.Maybe, 
                 module Graphics.Gloss.Data.Vector,
                 module Graphics.Gloss.Interface.Environment,
-                mapPlus,
-                radToDeg
+                module Graphics.Gloss.Geometry.Angle,
+                module Data.Bifunctor,
+                mapPlus
                 ) where
 
 import Graphics.Gloss
@@ -14,10 +15,9 @@ import Graphics.Gloss.Data.Point
 import Data.Maybe
 import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Interface.Environment
+import Graphics.Gloss.Geometry.Angle
+import Data.Bifunctor
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 mapPlus :: (a -> Vector) -> (a -> Vector) -> a -> Vector
 mapPlus f1 f2 s = f1 s PMath.+ f2 s
-
-radToDeg :: Float -> Float
-radToDeg = (*) 57.295779513224

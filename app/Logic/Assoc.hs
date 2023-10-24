@@ -14,6 +14,5 @@ search k list = foldr f Nothing list
 updateInputs :: (Eq k, Eq v) => k -> v -> Assoc k v -> Assoc k v
 updateInputs k v = foldr f []
     where
-        f (x, y) xs | y == v    = (k,y) : xs
-                    | otherwise = (x,y) : xs 
-
+        f (newKey, newValue) xs | newValue == value    = (key, newValue) : xs
+                                | otherwise            = (newKey, newValue) : xs 

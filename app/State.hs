@@ -14,7 +14,7 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
 			animations :: [Animation],
 			playerState :: PlayerState,
 			score :: Int,
-			timePlayed :: Int,
+			timePlayed :: Float,
 			gameLoop :: GameLoop,
             inputs :: Inputs
             }
@@ -27,7 +27,7 @@ standardState = State {
 			animations = [],
 			playerState = PlayerState {
                 playerPosition = (640, 360),
-                playerFacing = normalizeV (-1,-1),
+                playerFacing = normalizeV (1,0),
                 playerSpeed = (0,0),
                 playerAcceleration = (0,0),
                 playerLives = 3,
