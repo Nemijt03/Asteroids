@@ -14,7 +14,7 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
 			animations :: [Animation],
 			playerState :: PlayerState,
 			score :: Int,
-			timePlayed :: Int,
+			timePlayed :: Float,
 			gameLoop :: GameLoop,
             inputs :: Inputs
             }

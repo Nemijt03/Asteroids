@@ -17,8 +17,8 @@ data PlayerState = PlayerState {
 addAcceleration :: Float -> PlayerState -> PlayerState
 addAcceleration f ps = ps { playerAcceleration = f PMath.* playerFacing ps}
 
-stepPlayerState :: PlayerState -> PlayerState
-stepPlayerState ps =   ps {
+stepPlayerState :: PlayerState -> Float -> PlayerState
+stepPlayerState ps time =   ps {
                             playerPosition = wrap (mapPlus playerPosition playerSpeed ps),
                             playerSpeed = mapPlus playerSpeed playerAcceleration ps,
                             playerReloadTime = playerReloadTime ps - 1,
