@@ -1,9 +1,25 @@
 module Animation where
 
-data Animation = DeathAnimation | SpawnAnimation
-                deriving (Show, Eq)
-newtype DeathAnimation = MkDeathAnimation Int
-                deriving (Show, Eq)
-newtype SpawnAnimation = MkSpawnAnimation Int
-                deriving (Show, Eq)
--- maybe dus functie voor animation :: Int -> Picture
+import Imports
+-- data Animation = DeathAnimation {
+--                     frameTotal :: Int,
+--                     onFrame :: Int,
+--                     animationTime :: Float
+--                 }
+--                 | 
+--                 SpawnAnimation {
+                    
+--                 }
+
+data Animation = MkAnimation {
+                        frameTotal :: Int,
+                        onFrame :: Int,
+                        timeTillNextFrame :: Float
+                    }
+                    deriving (Eq, Show)
+
+animationToPicture :: Animation -> Picture
+animationToPicture = undefined
+
+stepAnimation :: Animation -> Float -> Animation
+stepAnimation = undefined

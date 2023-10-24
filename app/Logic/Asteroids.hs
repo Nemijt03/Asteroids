@@ -4,6 +4,9 @@ import Imports
 import Player
 import HandleInputs
 import State
+import Assoc
+import Data.Set
+import Data.Set (empty)
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
@@ -11,7 +14,7 @@ removeDeadEnemies :: State -> State
 removeDeadEnemies = undefined
 
 stateToPicture :: State -> IO Picture
-stateToPicture state = 
+stateToPicture state =
     do
         --enemies <- enemiesToPicture (enemies state)
         --projectiles <- projectilesToPicture (projectiles state)
@@ -20,6 +23,9 @@ stateToPicture state =
         --score <- scoreToPicture (score state)
 
         return (Pictures [
+            --Test:
+            -- Color white $ Text $ show $ toList $ downKeys state,
+            
             --enemies,
             --projectiles,
             --animations,
@@ -29,27 +35,38 @@ stateToPicture state =
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
-step secs state = return (stepGameState state)
-            where s = secs
+step time state = return (stepGameState state)
 
 stepGameState :: State -> State
-stepGameState s = s   {
+stepGameState s = stepDownKeys (downKeys s) (s {
                             -- stepEnemies (enemies state),
                             -- stepProjectiles (projectiles state),
                             -- stepAnimations (animations state),
-                            playerState = stepPlayerState (playerState s)
+                            playerState = stepPlayerState (playerState s) 0
                             -- stepScore (score state)
                             -- stepTimePlayed
                             -- stepGameLoop
-                            -- stepInputs
-                        }
+                        })
+
+stepDownKeys :: Set Key -> State -> State
+stepDownKeys set s       = case toList set of
+                                [] -> s
+                                _ -> (if isJust searched 
+                                            then stepDownKeys keys newState 
+                                            else stepDownKeys keys s)
+                                where
+                                    newState = handleAction (fromJust (search key standardInputs)) s
+                                    searched = search key standardInputs
+                                    key = head $ toList set
+                                    keys = fromList $ tail $ toList set
 
 -- | Handle user input
 input :: Event -> State -> IO State
-input e s = return (inputKey e s)
+input e s = return $ inputKey e s
 
 inputKey :: Event -> State -> State
-inputKey (EventKey key Down _ _) s = handleAction (search key (inputs s)) s
+inputKey (EventKey key Down _ _) s = s {downKeys = insert key (downKeys s)}
+inputKey (EventKey key Up _ _) s = s {downKeys = delete key (downKeys s)}
 inputKey _ s = s
 
 
@@ -62,7 +79,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
                     | otherwise = s
-                    where 
+                    where
                         ps = playerState s
                         chngPs x = s {playerState = x}
                         rotatePlayer rotation = chngPs (ps {playerFacing = rotation `rotateV` playerFacing ps})
