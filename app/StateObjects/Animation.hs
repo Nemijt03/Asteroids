@@ -16,7 +16,7 @@ data Animation = MkAnimation {
                         onFrame :: Int,
                         timeTillNextFrame :: Float
                     }
-
+    deriving (Show, Eq)
 animationToPicture :: Animation -> Picture
 animationToPicture = undefined
 
