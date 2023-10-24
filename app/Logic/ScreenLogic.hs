@@ -6,17 +6,14 @@ screen :: (Float, Float)
 screen = (1280, 720)
 
 wrap :: Vector -> Vector
-wrap (x, y) | isJust (wrapx x) && isJust (wrapy y) = (fromJust (wrapx x), fromJust (wrapy y))
-            | isJust (wrapx x) = (fromJust (wrapx x), y) 
-            | isJust (wrapy y) = (x, fromJust (wrapy y))
-            | otherwise = (x, y)
+wrap (x, y) = (wrapx x, wrapy y)
 
-wrapx :: Float -> Maybe Float
-wrapx x | x >= 0 && x < fst screen = Nothing
-        | x < 0 = Just (fst screen + x)
-        | otherwise = Just (x - fst screen)
+wrapx :: Float -> Float
+wrapx x | x >= 0 && x < fst screen = x
+        | x < 0 = fst screen + x
+        | otherwise = x - fst screen
 
-wrapy :: Float -> Maybe Float
-wrapy y | y >= 0 && y < snd screen = Nothing
-        | y < 0 = Just (snd screen + y)
-        | otherwise = Just (y - snd screen)
+wrapy :: Float -> Float
+wrapy y | y >= 0 && y < snd screen = y
+        | y < 0 = snd screen + y
+        | otherwise = y - snd screen
