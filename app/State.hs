@@ -6,6 +6,7 @@ import Projectile
 import Animation
 import Enemy
 import HandleInputs
+import Data.Set (empty)
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
@@ -16,7 +17,8 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
 			score :: Int,
 			timePlayed :: Float,
 			gameLoop :: GameLoop,
-            inputs :: Inputs
+            inputs :: Inputs,
+            downKeys :: Set Key
             }
             deriving (Show, Eq)
 
@@ -36,7 +38,8 @@ standardState = State {
 			score = 0,
 			timePlayed = 0,
 			gameLoop = Running,
-            inputs = standardInputs
+            inputs = standardInputs,
+            downKeys = empty
 }
 
 data GameLoop = Running | Paused

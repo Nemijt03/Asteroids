@@ -10,6 +10,10 @@ search k list = foldr f Nothing list
             Nothing -> if k == k' then Just u else Nothing
             _       -> may
 
+search :: Eq k => k -> [(k, v)] -> Maybe v
+search _ [] = Nothing
+search key ((key', v):xs) | key == key' = Just v
+                          | otherwise = search key xs
 
 updateInputs :: (Eq k, Eq v) => k -> v -> Assoc k v -> Assoc k v
 updateInputs k v = foldr f []
