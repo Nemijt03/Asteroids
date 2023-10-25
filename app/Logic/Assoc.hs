@@ -14,7 +14,7 @@ unsafeSearch :: Eq k => k -> Assoc k v -> v
 unsafeSearch k list = head [v |(k',v)<-list, k==k']
 
 updateInputs :: (Eq k, Eq v) => k -> v -> Assoc k v -> Assoc k v
-updateInputs key value = foldr f []
+updateInputs k v = foldr f []
     where
         f (k', v') xs | v == v'    = (k, v') : xs
                       | otherwise  = (k',v') : xs 
