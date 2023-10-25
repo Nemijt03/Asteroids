@@ -83,7 +83,8 @@ executable Asteroids
     -- Other library packages from which modules are imported.
     build-depends:      base >=4.16.0.0,
                         gloss >=1.13.0.0,
-                        containers
+                        containers,
+                        GLUT
 
     -- Directories containing source files.
     hs-source-dirs:   app

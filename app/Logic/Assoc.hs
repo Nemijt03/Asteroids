@@ -9,11 +9,12 @@ search k = foldl f Nothing
         f may (k', u) = case may of
             Nothing -> if k == k' then Just u else Nothing
             _       -> may
+            
 unsafeSearch :: Eq k => k -> Assoc k v -> v
 unsafeSearch k list = head [v |(k',v)<-list, k==k']
 
 updateInputs :: (Eq k, Eq v) => k -> v -> Assoc k v -> Assoc k v
-updateInputs k v = foldr f []
+updateInputs key value = foldr f []
     where
         f (k', v') xs | v == v'    = (k, v') : xs
                       | otherwise  = (k',v') : xs 
