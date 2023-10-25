@@ -42,5 +42,5 @@ standardState = State {
             downKeys = empty
 }
 
-data GameLoop = Running | Paused
-                deriving (Show, Eq)
+data GameLoop = Running | Paused | GameOver
+                deriving (Show, Eq, Enum)
