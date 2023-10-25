@@ -3,23 +3,34 @@ module Collision (doCollision) where
 
 import State
 import Assoc
+import Player
+import Enemy
+import Projectile
+import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import Graphics.Gloss.Data.Point
 import ScreenLogic
 
 --main export module
 doCollision :: State -> State
-doCollision State{enemies, projectiles, playerState} = let (newE, newPr, newPl) = naiveCollision enemies projectiles playerState
-                                                     in State{enemies = newE, projectiles = newPr, playerState = newPl}
+doCollision s@State{enemies, projectiles, playerState} = let (newE, newPr, newPl) = naiveCollision enemies projectiles playerState
+                                                     in s{enemies = newE, projectiles = newPr, playerState = newPl}
 
 naiveCollision :: [Enemy] -> [Projectile] -> PlayerState -> ([Enemy],[Projectile],PlayerState)
 naiveCollision enemies projectiles playerState = 
-    let (newE,newPr)        = unzip [(a, b)| enemy <- enemies, projectile <- projectiles, (a, b) <- collide enemy projectile]
-        (newPl, newerEnemy) = collideAll playerState newE
-        newestE             = collideList newerEnemy --all enemy collisions done
-        (newerPl, newerPr)  = collideAll newPl newPr
-        newestPr            = collideList newerPr
+    let (newE,newPr)       = collideListWithList enemies projectiles
+        (newPl, newerE)    = collideAll playerState newE
+        newestE            = collideList newerE --all enemy collisions done
+        (newerPl, newerPr) = collideAll newPl newPr
+        newestPr           = collideList newerPr
     in
         (newestE,newestPr,newerPl)
 
+collideListWithList :: (Collidable a, Collidable b) => [a] -> [b] -> ([a], [b])
+collideListWithList listA listB =  helper listA listB [] 
+    where    
+        helper []     ys xs  = (xs,ys)
+        helper (x:xs) ys acc = let (newx,newys) = collideAll x ys
+                               in helper xs newys (x:acc)  
 
 collideList :: Collidable a => [a] -> [a]
 collideList []     = []
@@ -34,7 +45,7 @@ collideAll a = foldr f (a,[])
         f b (a',xs) = let (newa,newb) = collide a' b in (newa,newb:xs)
                                                      
 type Width  = Float
-data Square = Sq Point Width
+data Square = Sq PMath.Point Width
 
 class Damagable a where
     doDamage :: a -> Int -> a
@@ -42,44 +53,45 @@ class Damagable a where
 class Squarable a where
     toSquare :: a -> Square
 
-    interSect :: Square -> Square -> Bool
-    interSect (Sq (x,y) w) (Sq (x',y') w') = x < (x' + w') && (x + w) > x
-                                           && y < (y' + w') && (y + w) > y
-    inside :: Square -> Square -> Bool
-    inside (Sq p w) (Sq p' w') = inBox tl && inBox tr && inBox dl && inBox dr
-        where
-            inBox = pointInBox p' (p' PMath.+ (w',w'))
-            tl = p
-            tr = p PMath.+ (w, 0)
-            dl = p PMath.+ (0, w)
-            dr = p PMath.+ (w, w)
+intersect :: Square -> Square -> Bool
+intersect (Sq (x,y) w) (Sq (x',y') w') = x < (x' + w') && (x + w) > x
+                                    && y < (y' + w') && (y + w) > y
+inside :: Square -> Square -> Bool
+inside (Sq p w) (Sq p' w') = inBox tl && inBox tr && inBox dl && inBox dr
+    where
+        inBox = pointInBox p' (p' PMath.+ (w',w'))
+        tl = p
+        tr = p PMath.+ (w, 0)
+        dl = p PMath.+ (0, w)
+        dr = p PMath.+ (w, w)
 
-class (Squarable a, Damagable a) => Collidable a where
-    isCollision :: (Collidable b) => a -> b -> Bool
-    isCollision a b = intersect (toSquare a) (toSquare b)
+class (Squarable a, Damagable a) => Collidable a
 
-    collide :: (Collidable b) => a -> b -> (a,b)
-    collide a b | isCollision a b = (doDamage a 1, doDamage b 1) --can be changed if a or b have a specific damage value added later
-                | otherwise       = (a, b)
+isCollision :: (Collidable a, Collidable b) => a -> b -> Bool
+isCollision a b = intersect (toSquare a) (toSquare b)
+
+collide :: (Collidable a, Collidable b) => a -> b -> (a,b)
+collide a b | isCollision a b = (doDamage a 1, doDamage b 1) --can be changed if a or b have a specific damage value added later
+            | otherwise       = (a, b)
 
 --instances to damage the different objects in the game
 instance Damagable Enemy where
     doDamage enemy@(MkAsteroid{asteroidHealth}) damage = enemy{asteroidHealth = asteroidHealth - damage}
-    doDamge  enemy@(MkSaucer  {saucerHealth})   damage = enemy{saucerHealth   = saucerHealth   - damage}
+    doDamage enemy@(MkSaucer  {saucerHealth})   damage = enemy{saucerHealth   = saucerHealth   - damage}
 
 instance Damagable PlayerState where
-    doDamage player damage = player{playerLives = playerLives - damage}
+    doDamage player@PlayerState{playerLives} damage = player{playerLives = playerLives - damage}
 
 instance Damagable Projectile where
     doDamage projectile _ = projectile{projectileTimeAlive = 0}
 
 --instances to convert the different objects to squares
 instance Squarable Enemy where
-    toSquare (MkAsteroid{asteroidPosition,asteroidSize}) = Sq asteroidPosition (search asteroidSize   standardSize)
-    toSquare (MkSaucer  {saucerPosition,  saucerSize})   = Sq saucerPosition   (search saucerPosition standardSize)
+    toSquare (MkAsteroid{asteroidPosition,asteroidSize}) = Sq asteroidPosition (unsafeSearch asteroidSize standardSize)
+    toSquare (MkSaucer  {saucerPosition,  saucerSize})   = Sq saucerPosition   (unsafeSearch saucerSize   standardSize)
 
-instance Squarable Player where
-    toSquare PlayerState{playerPosition} = Sq playerPosition (search medium standardSize)
+instance Squarable PlayerState where
+    toSquare PlayerState{playerPosition} = Sq playerPosition (unsafeSearch Medium standardSize)
 
 instance Squarable Projectile where
     toSquare Projectile{projectilePosition} = Sq projectilePosition 1 --1 pixel big
@@ -103,7 +115,7 @@ instance Collidable Projectile
 --This should heavily reduce the amount of checks needed to be done, the deeper you go, as you potentially quarter each check.
 --only overhead is the creation of the tree itself.
 
---problems: 1 wrapping may land a single object in 2, perhaps even more zones
+--problems: 1 wrapping may land a single object in 2 zones, perhaps even more
 --2 we have to store the objects, but we have to do so in a way which we can recall them and change them
 --3 an intersection may be counted twice, as each object at an intersection, is also intersected by the other object.
 
@@ -120,5 +132,5 @@ data Quadtree = Leaf [Int] --empty list denotes an empty leaf
 
 
 insertQuadTree :: Int -> Quadtree -> Quadtree
-insertQuadTree f (Leaf list)                   = Leaf (x:list)
+insertQuadTree f (Leaf list)                   = undefined
 insertQuadTree f (ParentNode list sl sr ul ur) = undefined
