@@ -3,6 +3,7 @@ module Main where
 import Imports
 import Asteroids
 import State
+import System.Exit
 
 main :: IO ()
 main = do
