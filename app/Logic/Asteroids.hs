@@ -8,6 +8,7 @@ import HandleInputs
 import State
 import Assoc
 import Graphics.UI.GLUT.Fonts
+import System.Exit
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
@@ -36,9 +37,9 @@ stateToPicture state =
             -- GameOver ->
         player <- playerStateToPicture (playerState state)
         --score <- scoreToPicture (score state)
-        continueButton <- button "Continue (1)" $ greyN 0.4
-        optionsButton <- button "Options (2)" $ greyN 0.4
-        quitButton <- button "Quit Game (3)" $ greyN 0.4
+        continueButton <- button "Continue (esc)" $ greyN 0.4
+        optionsButton <- button "Options (o)" $ greyN 0.4
+        quitButton <- button "Quit Game (0)" $ greyN 0.4
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let pauseButtons = case gameLoop state of
@@ -69,7 +70,10 @@ stateToPicture state =
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
-step time state = return (stepGameState time state)
+step time state = do 
+    case gameLoop state of
+        GameQuitted -> exitSuccess
+        _ -> return $ stepGameState time state
 
 stepGameState :: Float -> State -> State
 stepGameState time s = case gameLoop s of
@@ -82,8 +86,7 @@ stepGameState time s = case gameLoop s of
                             -- stepTimePlayed
                             -- stepGameLoop
                         })
-                    Paused -> stepDownKeys (downKeys s) s
-                    GameOver -> stepDownKeys (downKeys s) s
+                    _ -> stepDownKeys (downKeys s) s
 
 stepDownKeys :: Set Key -> State -> State
 stepDownKeys set s       = case toList set of
@@ -100,10 +103,11 @@ input :: Event -> State -> IO State
 input e s = return $ inputKey e s
 
 inputKey :: Event -> State -> State
-inputKey (EventKey key Down _ _) s | gameLoop s == Paused && isJust searched && not (member (fromJust searched) pausedUserActions) = s  
+inputKey (EventKey key Down _ _) s | isJust searched && not (member (fromJust searched) uaList) = s  
                                    | otherwise = s {downKeys = insert key (downKeys s)}
                                    where 
                                     searched = search key $ inputs s
+                                    uaList = if gameLoop s == Paused then pausedUserActions else runningUserActions
 inputKey (EventKey key Up _ _) s = s {downKeys = delete key (downKeys s)}
 inputKey _ s = s
 
@@ -116,7 +120,9 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
-                        GameOver -> s
+                        _ -> s
+                    | ua == QuitGame = s {gameLoop = GameQuitted}
+                    | ua == Options = s {gameLoop = OptionsMenu}
                     | otherwise = s
                     where
                         ps = playerState s
