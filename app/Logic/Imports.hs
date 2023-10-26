@@ -6,7 +6,6 @@ module Imports (module Graphics.Gloss,
                 module Graphics.Gloss.Interface.Environment,
                 module Graphics.Gloss.Geometry.Angle,
                 module Data.Bifunctor,
-                module Data.Set,
                 mapPlus
                 ) where
 
@@ -18,7 +17,6 @@ import Graphics.Gloss.Data.Vector
 import Graphics.Gloss.Interface.Environment
 import Graphics.Gloss.Geometry.Angle
 import Data.Bifunctor
-import Data.Set
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 mapPlus :: (a -> Point) -> (a -> Point) -> a -> Point
