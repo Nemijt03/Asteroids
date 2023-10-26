@@ -9,6 +9,8 @@ import State
 import Assoc
 import Graphics.UI.GLUT.Fonts
 import System.Exit
+import Projectile
+import qualified Data.Set as S
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
@@ -29,7 +31,7 @@ stateToPicture :: State -> IO Picture
 stateToPicture state =
     do
         --enemies <- enemiesToPicture (enemies state)
-        --projectiles <- projectilesToPicture (projectiles state)
+        projectilesPic <- projectilesToPicture (projectiles state)
         --animations <- animationsToPicture (animations state)
         -- let gameLoopShow = case gameLoop state of
             -- Running -> 
@@ -55,7 +57,7 @@ stateToPicture state =
                         ]
         let statePictures = [
                             --enemies,
-                            --projectiles,
+                            projectilesPic,
                             --animations,
                             player--,
                             -- gameLoopShow --,
@@ -76,10 +78,10 @@ step time state = do
         _ -> return $ stepGameState time state
 
 stepGameState :: Float -> State -> State
-stepGameState time s = case gameLoop s of
-                    Running -> stepDownKeys (downKeys s) (s {
+stepGameState time s = 
+    case gameLoop s of
+                    Running -> stateFunctions (s {
                             -- stepEnemies (enemies state),
-                            -- stepProjectiles (projectiles state),
                             -- stepAnimations (animations state),
                             playerState = stepPlayerState (playerState s) time
                             -- stepScore (score state)
@@ -88,27 +90,29 @@ stepGameState time s = case gameLoop s of
                         })
                     _ -> stepDownKeys (downKeys s) s
 
-stepDownKeys :: Set Key -> State -> State
-stepDownKeys set s       = case toList set of
+    where stateFunctions = stepDownKeys (downKeys s) . stepProjectiles
+
+stepDownKeys :: S.Set Key -> State -> State
+stepDownKeys set s       = case S.toList set of
                                 [] -> s
-                                (key:keys) -> (if isJust $ searched key
-                                            then stepDownKeys (fromList keys) $ newState key 
-                                            else stepDownKeys (fromList keys) s)
-                            where
-                                newState key = handleAction (fromJust $ searched key) s
-                                searched key = search key standardInputs
+                                (key:keys) -> (if isJust searched
+                                            then stepDownKeys (S.fromList keys) newState 
+                                            else stepDownKeys (S.fromList keys) s)
+                                    where
+                                        newState = handleAction (fromJust searched) s
+                                        searched = search key standardInputs
 
 -- | Handle user input
 input :: Event -> State -> IO State
 input e s = return $ inputKey e s
 
 inputKey :: Event -> State -> State
-inputKey (EventKey key Down _ _) s | isJust searched && not (member (fromJust searched) uaList) = s  
-                                   | otherwise = s {downKeys = insert key (downKeys s)}
+inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust searched) uaList) = s  
+                                   | otherwise = s {downKeys = S.insert key (downKeys s)}
                                    where 
                                     searched = search key $ inputs s
                                     uaList = if gameLoop s == Paused then pausedUserActions else runningUserActions
-inputKey (EventKey key Up _ _) s = s {downKeys = delete key (downKeys s)}
+inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
 inputKey _ s = s
 
 
@@ -117,6 +121,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
                     | ua == TurnRight = rotatePlayer (degToRad 90)
                     | ua == Forward = accelerate 3
                     | ua == Backward = accelerate (-3)
+                    | ua == Shoot = s {projectiles = shootFromPlayer (playerState s) : projectiles s}
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}

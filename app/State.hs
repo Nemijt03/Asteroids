@@ -6,28 +6,29 @@ import Projectile
 import Animation
 import Enemy
 import HandleInputs
+import qualified Data.Set as S
 
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
-			enemies :: [Enemy],
-			projectiles :: [Projectile],
-			animations :: [Animation],
-			playerState :: PlayerState,
-			score :: Int,
-			timePlayed :: Float,
-			gameLoop :: GameLoop,
+                        enemies :: [Enemy],
+                        projectiles :: [Projectile],
+                        animations :: [Animation],
+                        playerState :: PlayerState,
+                        score :: Int,
+                        timePlayed :: Float,
+                        gameLoop :: GameLoop,
             inputs :: Inputs,
-            downKeys :: Set Key
+            downKeys :: S.Set Key
             }
             deriving (Show, Eq)
 
 standardState :: State
 standardState = State {
             enemies = [],
-			projectiles = [],
-			animations = [],
-			playerState = PlayerState {
+                        projectiles = [Projectile (0,0) (0,0) 10], --Projectile (500, 360) (0,0) 10],
+                        animations = [],
+                        playerState = PlayerState {
                 playerPosition = (640, 360),
                 playerFacing = normalizeV (1,0),
                 playerSpeed = (0,0),
@@ -35,12 +36,15 @@ standardState = State {
                 playerLives = 3,
                 playerReloadTime = 0
             },
-			score = 0,
-			timePlayed = 0,
-			gameLoop = Running,
+                        score = 0,
+                        timePlayed = 0,
+                        gameLoop = Running,
             inputs = standardInputs,
-            downKeys = empty
+            downKeys = S.empty
 }
+
+stepProjectiles :: State -> State
+stepProjectiles s = s {projectiles = mapMaybe stepProjectile (projectiles s)}
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)
