@@ -1,25 +1,51 @@
 module Animation where
 
 import Imports
--- data Animation = DeathAnimation {
---                     frameTotal :: Int,
---                     onFrame :: Int,
---                     animationTime :: Float
---                 }
---                 | 
---                 SpawnAnimation {
-                    
---                 }
+import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 data Animation = MkAnimation {
-                        frameTotal :: Int,
+                        animationPosition :: Point,
                         onFrame :: Int,
-                        timeTillNextFrame :: Float
+                        timeFrameActive :: Float,
+                        timePerFrame :: Float,
+                        pictureFrames :: [Picture]
                     }
                     deriving (Eq, Show)
 
-animationToPicture :: Animation -> Picture
-animationToPicture = undefined
+mkDeathAnimation :: Point -> Animation
+mkDeathAnimation position = MkAnimation {
+                        animationPosition = position,
+                        onFrame = 0,
+                        timeFrameActive = 0,
+                        timePerFrame = 20,
+                        pictureFrames = [
+                            Color white $ Circle 4,
+                            Color white $ Circle 8,
+                            Color white $ Circle 16,
+                            Color white $ Circle 32,
+                            Color white $ Circle 64,
+                            Color white $ Circle 128
+                        ]   
+                    }
 
-stepAnimation :: Animation -> Float -> Animation
-stepAnimation = undefined
+animationsToPicture :: [Animation] -> IO Picture
+animationsToPicture as = do
+    size <- getScreenSize
+    return $ Pictures $ map (`animationToPicture` size) as
+
+animationToPicture :: Animation -> (Int, Int) -> Picture
+animationToPicture a (w, h) = do
+    let (sx, sy) = (1, 1)
+        (cx, cy) = (w `div` 2, h `div` 2)
+        pos = second (fromIntegral h -) $ animationPosition a
+        (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
+        in
+        Translate dx dy $ Scale sx sy $ {-head $ -} pictureFrames a !! onFrame a
+
+
+stepAnimation :: Animation -> Maybe Animation
+stepAnimation a | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing
+                | checkTime = Just $ a {timeFrameActive = 0, onFrame = onFrame a + 1}
+                | otherwise = Just $ a {timeFrameActive = timeFrameActive a + 1}
+                where 
+                    checkTime = timeFrameActive a >= timePerFrame a

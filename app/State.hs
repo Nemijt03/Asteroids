@@ -26,9 +26,9 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
 standardState :: State
 standardState = State {
             enemies = [],
-                        projectiles = [Projectile (0,0) (0,0) 10], --Projectile (500, 360) (0,0) 10],
-                        animations = [],
-                        playerState = PlayerState {
+            projectiles = [], --Projectile (500, 360) (0,0) 10],
+            animations = [mkDeathAnimation (600, 360)],
+            playerState = PlayerState {
                 playerPosition = (640, 360),
                 playerFacing = normalizeV (1,0),
                 playerSpeed = (0,0),
@@ -36,15 +36,18 @@ standardState = State {
                 playerLives = 3,
                 playerReloadTime = 0
             },
-                        score = 0,
-                        timePlayed = 0,
-                        gameLoop = Running,
+            score = 0,
+            timePlayed = 0,
+            gameLoop = Running,
             inputs = standardInputs,
             downKeys = S.empty
 }
 
 stepProjectiles :: State -> State
 stepProjectiles s = s {projectiles = mapMaybe stepProjectile (projectiles s)}
+
+stepAnimations :: State -> State
+stepAnimations s = s {animations = mapMaybe stepAnimation (animations s)}
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)
