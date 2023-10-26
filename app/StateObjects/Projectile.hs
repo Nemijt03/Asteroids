@@ -26,7 +26,7 @@ stepProjectile p | projectileTimeAlive p <= 0 = Nothing
 shootFromPlayer :: PlayerState -> Projectile
 shootFromPlayer s = Projectile {
                                     projectilePosition = playerPosition s, -- PMath.+ 2 PMath.* playerFacing s,
-                                    projectileSpeed = 50 PMath.* playerFacing s,
+                                    projectileSpeed = playerSpeed s PMath.+ (50 PMath.* playerFacing s),
                                     projectileTimeAlive = 20
                                 }
 
@@ -41,7 +41,7 @@ projectilesToPicture lst = do
     return $ Pictures $ Prelude.map (\x -> projectileToPicture x bmp size) lst
 
 projectileToPicture :: Projectile -> Picture -> (Int, Int) -> Picture
-projectileToPicture p bmp size = Translate dx dy $ Scale sx sy $ Color white $ Text "+"
+projectileToPicture p bmp size = Translate dx dy $ Scale sx sy $ Color white $ Text "."
     where 
         (w, h) = size
         (sx, sy) = (0.2, 0.2)
