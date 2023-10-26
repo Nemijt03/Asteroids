@@ -36,7 +36,7 @@ shootFromSaucer = undefined
 
 projectilesToPicture :: [Projectile] -> IO Picture
 projectilesToPicture lst = do
-    bmp <- loadBMP "images\\ship32.bmp"
+    bmp <- loadBMP "images\\ship32.bmp" -- projectile bmp ofc
     size <- getScreenSize
     return $ Pictures $ Prelude.map (\x -> projectileToPicture x bmp size) lst
 

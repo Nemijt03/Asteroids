@@ -11,6 +11,7 @@ import Graphics.UI.GLUT.Fonts
 import System.Exit
 import Projectile
 import qualified Data.Set as S
+import Animation (animationsToPicture)
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
@@ -32,7 +33,7 @@ stateToPicture state =
     do
         --enemies <- enemiesToPicture (enemies state)
         projectilesPic <- projectilesToPicture (projectiles state)
-        --animations <- animationsToPicture (animations state)
+        animationsPic <- animationsToPicture (animations state)
         -- let gameLoopShow = case gameLoop state of
             -- Running -> 
             -- Paused ->
@@ -58,7 +59,7 @@ stateToPicture state =
         let statePictures = [
                             --enemies,
                             projectilesPic,
-                            --animations,
+                            animationsPic,
                             player--,
                             -- gameLoopShow --,
                             --score
@@ -73,6 +74,7 @@ stateToPicture state =
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
 step time state = do 
+    print $ animations state
     case gameLoop state of
         GameQuitted -> exitSuccess
         _ -> return $ stepGameState time state
@@ -82,7 +84,6 @@ stepGameState time s =
     case gameLoop s of
                     Running -> stateFunctions (s {
                             -- stepEnemies (enemies state),
-                            -- stepAnimations (animations state),
                             playerState = stepPlayerState (playerState s) time
                             -- stepScore (score state)
                             -- stepTimePlayed
@@ -90,7 +91,7 @@ stepGameState time s =
                         })
                     _ -> stepDownKeys (downKeys s) s
 
-    where stateFunctions = stepDownKeys (downKeys s) . stepProjectiles
+    where stateFunctions = stepDownKeys (downKeys s) . stepProjectiles . stepAnimations
 
 stepDownKeys :: S.Set Key -> State -> State
 stepDownKeys set s       = case S.toList set of
