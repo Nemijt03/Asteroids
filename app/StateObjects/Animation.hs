@@ -49,3 +49,17 @@ stepAnimation a | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothi
                 | otherwise = Just $ a {timeFrameActive = timeFrameActive a + 1}
                 where 
                     checkTime = timeFrameActive a >= timePerFrame a
+
+bmpDataToPieces :: BitmapData -> [Picture]
+bmpDataToPieces bmpData = [
+                            BitmapSection tl bmpData,
+                            BitmapSection tr bmpData,
+                            BitmapSection bl bmpData,
+                            BitmapSection br bmpData
+                        ]
+                        where 
+                            (w, h) = bitmapSize bmpData
+                            tl = Rectangle (0,0) (div w 2, div h 2)
+                            tr = Rectangle (div w 2, 0) (div w 2, div h 2)
+                            bl = Rectangle (0, div h 2) (div w 2, div h 2)
+                            br = Rectangle (div w 2, div h 2) (div w 2, div h 2)
