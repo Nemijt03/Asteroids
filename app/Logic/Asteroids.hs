@@ -74,7 +74,6 @@ stateToPicture state =
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
 step time state = do 
-    print $ animations state
     case gameLoop state of
         GameQuitted -> exitSuccess
         _ -> return $ stepGameState time state
@@ -122,7 +121,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
                     | ua == TurnRight = rotatePlayer (degToRad 90)
                     | ua == Forward = accelerate 3
                     | ua == Backward = accelerate (-3)
-                    | ua == Shoot = s {projectiles = shootFromPlayer (playerState s) : projectiles s}
+                    | ua == Shoot = shootFromPlayer s
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}

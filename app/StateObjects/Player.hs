@@ -10,7 +10,7 @@ data PlayerState = PlayerState {
                 playerSpeed :: Vector,
                 playerAcceleration :: Vector,
                 playerLives :: Int,
-                playerReloadTime :: Float, -- will be able to shoot when at 0
+                playerReloadTime :: Float,
                 playerBitmapData :: BitmapData
                 }
                 deriving (Show, Eq)
@@ -22,8 +22,8 @@ stepPlayerState :: PlayerState -> Float -> PlayerState
 stepPlayerState ps time =   ps {
                             playerPosition = wrap (mapPlus playerPosition playerSpeed ps),
                             playerSpeed = 0.9 PMath.* mapPlus playerSpeed playerAcceleration ps,
-                            playerReloadTime = playerReloadTime ps - 1,
-                            playerAcceleration = 0.8 PMath.* playerAcceleration ps
+                            playerAcceleration = 0.8 PMath.* playerAcceleration ps,
+                            playerReloadTime = playerReloadTime ps - 1
                         }
 
 

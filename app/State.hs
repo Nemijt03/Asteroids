@@ -6,6 +6,7 @@ import Projectile
 import Animation
 import Enemy
 import HandleInputs
+import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import qualified Data.Set as S
 
 
@@ -18,10 +19,10 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         score :: Int,
                         timePlayed :: Float,
                         gameLoop :: GameLoop,
-            inputs :: Inputs,
-            downKeys :: S.Set Key
-            }
-            deriving (Show, Eq)
+                        inputs :: Inputs,
+                        downKeys :: S.Set Key
+                        }
+                            deriving (Show, Eq)
 
 standardState :: IO State
 standardState = do
@@ -56,6 +57,17 @@ stepAnimations s = s {animations = mapMaybe stepAnimation (animations s)}
 playerDies :: State -> State
 playerDies s = s -- make bitmap go into pieves and explode it like that
 
+shootFromPlayer :: State -> State
+shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
+                  | otherwise = s {projectiles = Projectile {
+                                    projectilePosition = playerPosition $ playerState s, -- PMath.+ 2 PMath.* playerFacing s,
+                                    projectileSpeed = playerSpeed (playerState s) PMath.+ (50 PMath.* playerFacing (playerState s)),
+                                    projectileTimeAlive = 20
+                                    } : projectiles s,
+                                playerState = (playerState s) {playerReloadTime = 5} }
+
+shootFromSaucer :: Enemy -> Projectile
+shootFromSaucer = undefined
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)

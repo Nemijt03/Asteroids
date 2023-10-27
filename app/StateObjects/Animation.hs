@@ -12,6 +12,7 @@ data Animation = MkAnimation {
                     }
                     deriving (Eq, Show)
 
+-- prototype
 mkDeathAnimation :: Point -> Animation
 mkDeathAnimation position = MkAnimation {
                         animationPosition = position,
@@ -40,7 +41,7 @@ animationToPicture a (w, h) = do
         pos = second (fromIntegral h -) $ animationPosition a
         (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
         in
-        Translate dx dy $ Scale sx sy $ {-head $ -} pictureFrames a !! onFrame a
+        Translate dx dy $ Scale sx sy $ pictureFrames a !! onFrame a
 
 
 stepAnimation :: Animation -> Maybe Animation

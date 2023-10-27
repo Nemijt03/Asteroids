@@ -16,7 +16,7 @@ doCollision s@State{enemies, projectiles, playerState} = let (newE, newPr, newPl
                                                      in s{enemies = newE, projectiles = newPr, playerState = newPl}
 
 naiveCollision :: [Enemy] -> [Projectile] -> PlayerState -> ([Enemy],[Projectile],PlayerState)
-naiveCollision enemies projectiles playerState = 
+naiveCollision enemies projectiles playerState =
     let (newE,newPr)       = collideListWithList enemies projectiles
         (newPl, newerE)    = collideAll playerState newE
         newestE            = collideList newerE --all enemy collisions done
@@ -26,24 +26,24 @@ naiveCollision enemies projectiles playerState =
         (newestE,newestPr,newerPl)
 
 collideListWithList :: (Collidable a, Collidable b) => [a] -> [b] -> ([a], [b])
-collideListWithList listA listB =  helper listA listB [] 
-    where    
+collideListWithList listA listB =  helper listA listB []
+    where
         helper []     ys xs  = (xs,ys)
         helper (x:xs) ys acc = let (newx,newys) = collideAll x ys
-                               in helper xs newys (newx:acc)  
+                               in helper xs newys (newx:acc)
 
 collideList :: Collidable a => [a] -> [a]
 collideList []     = []
 collideList [x]    = [x]
 collideList (x:xs) = let (newx, newxs) = collideAll x xs
-                     in newx:(collideList newxs) --cannot think how to do this with foldr or something.
+                     in newx : collideList newxs --cannot think how to do this with foldr or something.
 
 
 collideAll :: (Collidable a, Collidable b) => a -> [b] -> (a,[b])
 collideAll a = foldr f (a,[])
-    where 
+    where
         f b (a',xs) = let (newa,newb) = collide a' b in (newa,newb:xs)
-                                                     
+
 type Width  = Float
 data Square = Sq PMath.Point Width
 
@@ -98,7 +98,7 @@ instance Squarable Projectile where
 
 
 --making all objects an instance of collidable thanks to them already being Squarable and Damagable
-instance Collidable Enemy 
+instance Collidable Enemy
 
 instance Collidable PlayerState
 

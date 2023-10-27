@@ -23,17 +23,6 @@ stepProjectile p | projectileTimeAlive p <= 0 = Nothing
                     }
 
 
-shootFromPlayer :: PlayerState -> Projectile
-shootFromPlayer s = Projectile {
-                                    projectilePosition = playerPosition s, -- PMath.+ 2 PMath.* playerFacing s,
-                                    projectileSpeed = playerSpeed s PMath.+ (50 PMath.* playerFacing s),
-                                    projectileTimeAlive = 20
-                                }
-
-shootFromSaucer :: Enemy -> Projectile
-shootFromSaucer = undefined
-
-
 projectilesToPicture :: [Projectile] -> IO Picture
 projectilesToPicture lst = do
     bmp <- loadBMP "images\\ship32.bmp" -- projectile bmp ofc
