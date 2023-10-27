@@ -23,8 +23,11 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
             }
             deriving (Show, Eq)
 
-standardState :: State
-standardState = State {
+standardState :: IO State
+standardState = do
+    Right playerBMP <- readBMP "images\\ship32.bmp"
+    let playerBMPData = bitmapDataOfBMP playerBMP
+    return $ State {
             enemies = [],
             projectiles = [], --Projectile (500, 360) (0,0) 10],
             animations = [mkDeathAnimation (600, 360)],
@@ -34,7 +37,8 @@ standardState = State {
                 playerSpeed = (0,0),
                 playerAcceleration = (0,0),
                 playerLives = 3,
-                playerReloadTime = 0
+                playerReloadTime = 0,
+                playerBitmapData = playerBMPData
             },
             score = 0,
             timePlayed = 0,
@@ -48,6 +52,10 @@ stepProjectiles s = s {projectiles = mapMaybe stepProjectile (projectiles s)}
 
 stepAnimations :: State -> State
 stepAnimations s = s {animations = mapMaybe stepAnimation (animations s)}
+
+playerDies :: State -> State
+playerDies s = s -- make bitmap go into pieves and explode it like that
+
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)

@@ -10,7 +10,8 @@ data PlayerState = PlayerState {
                 playerSpeed :: Vector,
                 playerAcceleration :: Vector,
                 playerLives :: Int,
-                playerReloadTime :: Float -- will be able to shoot when at 0
+                playerReloadTime :: Float, -- will be able to shoot when at 0
+                playerBitmapData :: BitmapData
                 }
                 deriving (Show, Eq)
 
@@ -28,9 +29,8 @@ stepPlayerState ps time =   ps {
 
 playerStateToPicture :: PlayerState -> IO Picture
 playerStateToPicture ps = do
-                    bmp <- loadBMP "images\\ship32.bmp"
                     (w, h) <- getScreenSize
-                    let bmp1 = Rotate 90 bmp
+                    let bmp1 = Rotate 90 $ Bitmap $ playerBitmapData ps
                         (cx, cy) = (w `div` 2, h `div` 2)
                         pos = second (fromIntegral h -) (playerPosition ps)
                         (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
