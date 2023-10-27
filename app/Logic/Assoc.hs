@@ -9,7 +9,6 @@ search k = foldl f Nothing
         f may (k', u) = case may of
             Nothing -> if k == k' then Just u else Nothing
             _       -> may
-            
 unsafeSearch :: Eq k => k -> Assoc k v -> v
 unsafeSearch k list = head [v |(k',v)<-list, k==k']
 

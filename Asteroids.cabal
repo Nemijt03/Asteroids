@@ -65,17 +65,21 @@ executable Asteroids
     -- .hs or .lhs file containing the Main module.
     main-is:          Main.hs
 
-    -- Modules included in this executable, other than Main.
-    other-modules:    "Player"
-                      "Imports"
-                      "Projectile"
-                      "ScreenLogic"
-                      "Asteroids"
-                      "HandleInputs"
-                      "Enemy"
-                      "Animation"
-                      "State"
-                      "Assoc"
+    -- Modules included in this executable, other than Main.  
+
+    other-modules:
+        "Assoc" 
+        "Collision"
+        "HandleInputs"
+        "Player"
+        "Imports"
+        "Projectile"
+        "ScreenLogic"
+        "Asteroids"
+        "Enemy"
+        "Animation"
+        "State"
+        
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
