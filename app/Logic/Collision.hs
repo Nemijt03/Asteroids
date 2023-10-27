@@ -30,13 +30,13 @@ collideListWithList listA listB =  helper listA listB []
     where    
         helper []     ys xs  = (xs,ys)
         helper (x:xs) ys acc = let (newx,newys) = collideAll x ys
-                               in helper xs newys (x:acc)  
+                               in helper xs newys (newx:acc)  
 
 collideList :: Collidable a => [a] -> [a]
 collideList []     = []
 collideList [x]    = [x]
 collideList (x:xs) = let (newx, newxs) = collideAll x xs
-                     in newx:(collideList xs) 
+                     in newx:(collideList newxs) --cannot think how to do this with foldr or something.
 
 
 collideAll :: (Collidable a, Collidable b) => a -> [b] -> (a,[b])
@@ -125,7 +125,7 @@ instance Collidable Projectile
 --2 we could create an abstraction, or we could map each with a specific id, which correlates to an inherent consictent system.
 --we could take the player first, the enemies, then projectiles. ID 1 would then be the player and the rest would be dependant on the list.
 --3 remove the object from the list after the intersections are done for that element
-
+{-
 data Quadtree = Leaf [Int] --empty list denotes an empty leaf
                | ParentNode [Int] Quadtree Quadtree Quadtree Quadtree
     deriving (Eq, Show)
@@ -134,3 +134,4 @@ data Quadtree = Leaf [Int] --empty list denotes an empty leaf
 insertQuadTree :: Int -> Quadtree -> Quadtree
 insertQuadTree f (Leaf list)                   = undefined
 insertQuadTree f (ParentNode list sl sr ul ur) = undefined
+-}
