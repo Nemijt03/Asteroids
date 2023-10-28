@@ -1,3 +1,4 @@
+{-# language NamedFieldPuns #-}
 module State where
 
 import Player
@@ -7,7 +8,7 @@ import Animation
 import Enemy
 import HandleInputs
 import qualified Data.Set as S
-
+import System.Random
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
@@ -18,8 +19,9 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         score :: Int,
                         timePlayed :: Float,
                         gameLoop :: GameLoop,
-            inputs :: Inputs,
-            downKeys :: S.Set Key
+                        randomG :: StdGen,
+                        inputs :: Inputs,
+                        downKeys :: S.Set Key
             }
             deriving (Show, Eq)
 
@@ -40,14 +42,20 @@ standardState = State {
             timePlayed = 0,
             gameLoop = Running,
             inputs = standardInputs,
-            downKeys = S.empty
+            downKeys = S.empty,
+            randomG = mkStdGen 10 --pseudo random. All executions of the program will result in the same
 }
 
+
+
 stepProjectiles :: State -> State
-stepProjectiles s = s {projectiles = mapMaybe stepProjectile (projectiles s)}
+stepProjectiles s = s {projectiles = map stepProjectile (projectiles s)}
+
+stepEnemies :: State -> State
+stepEnemies s@State{playerState,enemies} = s{enemies = map ( `moveEnemy` playerPosition playerState) enemies}
 
 stepAnimations :: State -> State
-stepAnimations s = s {animations = mapMaybe stepAnimation (animations s)}
+stepAnimations s = s {animations = map stepAnimation (animations s)}
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)

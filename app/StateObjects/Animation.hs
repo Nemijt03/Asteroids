@@ -43,9 +43,9 @@ animationToPicture a (w, h) = do
         Translate dx dy $ Scale sx sy $ {-head $ -} pictureFrames a !! onFrame a
 
 
-stepAnimation :: Animation -> Maybe Animation
-stepAnimation a | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing
-                | checkTime = Just $ a {timeFrameActive = 0, onFrame = onFrame a + 1}
-                | otherwise = Just $ a {timeFrameActive = timeFrameActive a + 1}
+stepAnimation :: Animation -> Animation
+stepAnimation a | checkTime =  a {timeFrameActive = 0, onFrame = onFrame a + 1}
+                | otherwise =  a {timeFrameActive = timeFrameActive a + 1}
                 where 
                     checkTime = timeFrameActive a >= timePerFrame a
+-- | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing

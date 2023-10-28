@@ -10,13 +10,12 @@ import Assoc
 import Graphics.UI.GLUT.Fonts
 import System.Exit
 import Projectile
+import Collision
 import qualified Data.Set as S
 import Animation (animationsToPicture)
+import SpawnEnemies
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
-
-removeDeadEnemies :: State -> State
-removeDeadEnemies = undefined
 
 
 button :: String -> Color -> IO Picture
@@ -83,7 +82,6 @@ stepGameState :: Float -> State -> State
 stepGameState time s = 
     case gameLoop s of
                     Running -> stateFunctions (s {
-                            -- stepEnemies (enemies state),
                             playerState = stepPlayerState (playerState s) time
                             -- stepScore (score state)
                             -- stepTimePlayed
@@ -91,7 +89,18 @@ stepGameState time s =
                         })
                     _ -> stepDownKeys (downKeys s) s
 
-    where stateFunctions = stepDownKeys (downKeys s) . stepProjectiles . stepAnimations
+    where stateFunctions = stepDownKeys (downKeys s) . 
+                           spawnEnemy .
+                           removeDeadEnemies .
+                           doCollision . 
+                           stepEnemiesShoot .
+                           stepEnemies .
+                           stepProjectiles . 
+                           stepAnimations
+
+removeDeadEnemies :: State -> State
+removeDeadEnemies = undefined
+
 
 stepDownKeys :: S.Set Key -> State -> State
 stepDownKeys set s       = case S.toList set of
@@ -102,6 +111,8 @@ stepDownKeys set s       = case S.toList set of
                                     where
                                         newState = handleAction (fromJust searched) s
                                         searched = search key standardInputs
+
+
 
 -- | Handle user input
 input :: Event -> State -> IO State
@@ -126,7 +137,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
-                        _ -> s
+                        _ -> s --gameLoop can only be running or Paused. This is unnecessary
                     | ua == QuitGame = s {gameLoop = GameQuitted}
                     | ua == Options = s {gameLoop = OptionsMenu}
                     | otherwise = s

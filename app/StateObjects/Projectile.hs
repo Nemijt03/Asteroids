@@ -15,9 +15,8 @@ data Projectile = Projectile {
                 deriving (Show, Eq)
 
 
-stepProjectile :: Projectile -> Maybe Projectile
-stepProjectile p | projectileTimeAlive p <= 0 = Nothing
-                 | otherwise = Just $ p {
+stepProjectile :: Projectile ->  Projectile
+stepProjectile p = p {
                         projectilePosition = wrap (mapPlus projectilePosition projectileSpeed p),
                         projectileTimeAlive = projectileTimeAlive p - 1
                     }

@@ -79,6 +79,7 @@ executable Asteroids
         "Enemy"
         "Animation"
         "State"
+        "SpawnEnemies"
         
 
     -- LANGUAGE extensions used by modules in this package.
@@ -87,6 +88,7 @@ executable Asteroids
     -- Other library packages from which modules are imported.
     build-depends:      base >=4.16.0.0,
                         gloss >=1.13.0.0,
+                        random >=1.2.1.1,
                         containers,
                         GLUT
 

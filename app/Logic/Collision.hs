@@ -8,7 +8,6 @@ import Enemy
 import Projectile
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import Graphics.Gloss.Data.Point
-import ScreenLogic
 
 --main export module
 doCollision :: State -> State

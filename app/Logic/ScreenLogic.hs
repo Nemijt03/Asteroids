@@ -5,6 +5,12 @@ import Imports
 screen :: (Float, Float)
 screen = (1280, 720)
 
+screenWidth :: Float
+screenWidth = fst screen
+
+screenHeight :: Float
+screenHeight = snd screen
+
 wrap :: Vector -> Vector
 wrap (x, y) = (wrapx x, wrapy y)
 
@@ -17,3 +23,6 @@ wrapy :: Float -> Float
 wrapy y | y >= 0 && y < snd screen = y
         | y < 0 = snd screen + y
         | otherwise = y - snd screen
+
+wrapPoint :: Point -> Point
+wrapPoint (x, y) = (wrapx x, wrapy y)
