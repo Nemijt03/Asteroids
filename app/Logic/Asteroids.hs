@@ -10,6 +10,7 @@ import Assoc
 import Graphics.UI.GLUT.Fonts
 import System.Exit
 import Projectile
+import Pausing
 import qualified Data.Set as S
 import Animation (animationsToPicture)
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
@@ -18,15 +19,6 @@ import Animation (animationsToPicture)
 removeDeadEnemies :: State -> State
 removeDeadEnemies = undefined
 
-
-button :: String -> Color -> IO Picture
-button s c = do
-                width <- stringWidth Roman s
-                let offset = fromIntegral $ negate $ width `div` 4
-                return $ Pictures [
-                    Color c $ Line [(-300,-50), (300,-50), (300,50), (-300,50), (-300,-50)],
-                    Translate offset (-20) $ Scale 0.5 0.5 $ Color white $ Text s
-                    ]
 
 stateToPicture :: State -> IO Picture
 stateToPicture state =
@@ -39,19 +31,13 @@ stateToPicture state =
             -- Paused ->
             -- GameOver ->
         player <- playerStateToPicture (playerState state)
+        pauseButtons <- pauseButtonsIO
         --score <- scoreToPicture (score state)
-        continueButton <- button "Continue (esc)" $ greyN 0.4
-        optionsButton <- button "Options (o)" $ greyN 0.4
-        quitButton <- button "Quit Game (0)" $ greyN 0.4
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
-        let pauseButtons = case gameLoop state of
+        let pausePictures = case gameLoop state of
                                 Running -> []
-                                _ ->        [    
-                                                Translate 0 200 continueButton,
-                                                optionsButton,
-                                                Translate 0 (-200) quitButton
-                                            ]
+                                _ -> pauseButtons
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,
@@ -68,7 +54,7 @@ stateToPicture state =
 
         return (Pictures $ 
             statePictures ++
-            pauseButtons ++ 
+            pausePictures ++ 
             testPictures)
 
 -- | Handle one iteration of the game
