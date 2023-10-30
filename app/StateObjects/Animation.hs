@@ -13,19 +13,26 @@ data Animation = MkAnimation {
                     deriving (Eq, Show)
 
 -- prototype
-mkDeathAnimation :: Point -> Animation
-mkDeathAnimation position = MkAnimation {
+mkDeathAnimation :: Point -> IO Animation
+mkDeathAnimation position = do
+    bmp1 <- loadBMP "images/explosion/1.bmp"
+    bmp2 <- loadBMP "images/explosion/2.bmp"
+    bmp3 <- loadBMP "images/explosion/3.bmp"
+    bmp4 <- loadBMP "images/explosion/4.bmp"
+    bmp5 <- loadBMP "images/explosion/5.bmp"
+    bmp6 <- loadBMP "images/explosion/6.bmp"
+    return $ MkAnimation {
                         animationPosition = position,
                         onFrame = 0,
                         timeFrameActive = 0,
-                        timePerFrame = 20,
+                        timePerFrame = 10,
                         pictureFrames = [
-                            Color white $ Circle 4,
-                            Color white $ Circle 8,
-                            Color white $ Circle 16,
-                            Color white $ Circle 32,
-                            Color white $ Circle 64,
-                            Color white $ Circle 128
+                            Scale 1.25 1.25 bmp1,
+                            Scale 1.25 1.25 bmp2,
+                            Scale 1.25 1.25 bmp3,
+                            Scale 1.25 1.25 bmp4,
+                            Scale 1.25 1.25 bmp5,
+                            Scale 1.25 1.25 bmp6
                         ]   
                     }
 

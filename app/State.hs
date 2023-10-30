@@ -29,11 +29,12 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
 standardState :: IO State
 standardState = do
     Right playerBMP <- readBMP "images\\ship32.bmp"
+    deathAnimation <- mkDeathAnimation (600, 360)
     let playerBMPData = bitmapDataOfBMP playerBMP
     return $ State {
             enemies = [],
             projectiles = [], --Projectile (500, 360) (0,0) 10],
-            animations = [mkDeathAnimation (600, 360)],
+            animations = [deathAnimation],
             playerState = PlayerState {
                 playerPosition = (640, 360),
                 playerFacing = normalizeV (1,0),
