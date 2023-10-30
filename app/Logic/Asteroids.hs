@@ -7,7 +7,6 @@ import Player
 import HandleInputs
 import State
 import Assoc
-import Graphics.UI.GLUT.Fonts
 import System.Exit
 import Projectile
 import Pausing
@@ -31,13 +30,14 @@ stateToPicture state =
             -- Paused ->
             -- GameOver ->
         player <- playerStateToPicture (playerState state)
-        pauseButtons <- pauseButtonsIO
+        btns <- pausingButtons
+        pauseButtons <- buttonsToPicture btns
         --score <- scoreToPicture (score state)
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let pausePictures = case gameLoop state of
                                 Running -> []
-                                _ -> pauseButtons
+                                _ -> [pauseButtons]
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,
@@ -92,15 +92,22 @@ stepDownKeys set s       = case S.toList set of
 input :: Event -> State -> IO State
 input e s = return $ inputKey e s
 
+-- if a key is down, add to downKeys, but only when in the list of Useractions
 inputKey :: Event -> State -> State
 inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust searched) uaList) = s  
                                    | otherwise = s {downKeys = S.insert key (downKeys s)}
                                    where 
                                     searched = search key $ inputs s
                                     uaList = if gameLoop s == Paused then pausedUserActions else runningUserActions
-inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
+-- remove key from downKeys and call mouseClick if LeftButton is clicked
+inputKey (EventKey key Up _ _) s = case key of
+                                MouseButton b -> case b of
+                                    LeftButton -> mouseClick newS
+                                    _ -> newS
+                                _ -> newS
+                                where newS = s {downKeys = S.delete key (downKeys s)}
+inputKey (EventMotion pos) s = s {mousePosition = pos}
 inputKey _ s = s
-
 
 handleAction :: UserAction -> State -> State
 handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))

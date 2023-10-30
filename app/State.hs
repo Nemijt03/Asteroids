@@ -20,7 +20,8 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         timePlayed :: Float,
                         gameLoop :: GameLoop,
                         inputs :: Inputs,
-                        downKeys :: S.Set Key
+                        downKeys :: S.Set Key,
+                        mousePosition :: (Float, Float)
                         }
                             deriving (Show, Eq)
 
@@ -45,7 +46,8 @@ standardState = do
             timePlayed = 0,
             gameLoop = Running,
             inputs = standardInputs,
-            downKeys = S.empty
+            downKeys = S.empty,
+            mousePosition = (0, 0)
 }
 
 stepProjectiles :: State -> State
@@ -68,6 +70,11 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
 
 shootFromSaucer :: Enemy -> Projectile
 shootFromSaucer = undefined
+
+mouseClick :: State -> State
+mouseClick s = s 
+            where 
+                (x, y) = mousePosition s
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)
