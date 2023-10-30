@@ -2,8 +2,6 @@ module Projectile where
 
 import Imports
 import ScreenLogic
-import Enemy
-import Player
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
