@@ -7,9 +7,9 @@ import Player
 import HandleInputs
 import State
 import Assoc
-import Graphics.UI.GLUT.Fonts
 import System.Exit
 import Projectile
+import Pausing
 import qualified Data.Set as S
 import Animation (animationsToPicture)
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
@@ -18,15 +18,6 @@ import Animation (animationsToPicture)
 removeDeadEnemies :: State -> State
 removeDeadEnemies = undefined
 
-
-button :: String -> Color -> IO Picture
-button s c = do
-                width <- stringWidth Roman s
-                let offset = fromIntegral $ negate $ width `div` 4
-                return $ Pictures [
-                    Color c $ Line [(-300,-50), (300,-50), (300,50), (-300,50), (-300,-50)],
-                    Translate offset (-20) $ Scale 0.5 0.5 $ Color white $ Text s
-                    ]
 
 stateToPicture :: State -> IO Picture
 stateToPicture state =
@@ -39,19 +30,14 @@ stateToPicture state =
             -- Paused ->
             -- GameOver ->
         player <- playerStateToPicture (playerState state)
+        btns <- pausingButtons
+        pauseButtons <- buttonsToPicture btns
         --score <- scoreToPicture (score state)
-        continueButton <- button "Continue (esc)" $ greyN 0.4
-        optionsButton <- button "Options (o)" $ greyN 0.4
-        quitButton <- button "Quit Game (0)" $ greyN 0.4
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
-        let pauseButtons = case gameLoop state of
+        let pausePictures = case gameLoop state of
                                 Running -> []
-                                _ ->        [    
-                                                Translate 0 200 continueButton,
-                                                optionsButton,
-                                                Translate 0 (-200) quitButton
-                                            ]
+                                _ -> [pauseButtons]
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,
@@ -68,7 +54,7 @@ stateToPicture state =
 
         return (Pictures $ 
             statePictures ++
-            pauseButtons ++ 
+            pausePictures ++ 
             testPictures)
 
 -- | Handle one iteration of the game
@@ -104,17 +90,30 @@ stepDownKeys set s       = case S.toList set of
 
 -- | Handle user input
 input :: Event -> State -> IO State
-input e s = return $ inputKey e s
+input e s = do 
+    let rtrn = return $ inputKey e s
+    -- call mouseClick if LeftButton is clicked
+    if gameLoop s /= Running
+        then case e of
+            EventKey key Up _ _ -> case key of
+                MouseButton b -> case b of
+                    LeftButton -> mouseClick $ inputKey e s
+                    _ -> rtrn
+                _ -> rtrn
+            _ -> rtrn
+        else rtrn 
 
+-- if a key is down, add to downKeys, but only when in the list of Useractions
 inputKey :: Event -> State -> State
 inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust searched) uaList) = s  
                                    | otherwise = s {downKeys = S.insert key (downKeys s)}
                                    where 
                                     searched = search key $ inputs s
                                     uaList = if gameLoop s == Paused then pausedUserActions else runningUserActions
+-- remove key from downKeys
 inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
+inputKey (EventMotion pos) s = s {mousePosition = pos}
 inputKey _ s = s
-
 
 handleAction :: UserAction -> State -> State
 handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))

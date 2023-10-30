@@ -8,6 +8,7 @@ import Enemy
 import HandleInputs
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import qualified Data.Set as S
+import Pausing
 
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
@@ -20,7 +21,8 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         timePlayed :: Float,
                         gameLoop :: GameLoop,
                         inputs :: Inputs,
-                        downKeys :: S.Set Key
+                        downKeys :: S.Set Key,
+                        mousePosition :: (Float, Float)
                         }
                             deriving (Show, Eq)
 
@@ -45,7 +47,8 @@ standardState = do
             timePlayed = 0,
             gameLoop = Running,
             inputs = standardInputs,
-            downKeys = S.empty
+            downKeys = S.empty,
+            mousePosition = (0, 0)
 }
 
 stepProjectiles :: State -> State
@@ -68,6 +71,39 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
 
 shootFromSaucer :: Enemy -> Projectile
 shootFromSaucer = undefined
+
+mouseClick :: State -> IO State
+mouseClick s = do
+    a <- buttonsWithActions
+    let mousePos = mousePosition s
+        jeiaj = filter (isInside mousePos) a
+        fea = snd $ head jeiaj
+    fea s
+
+isInside :: (Float, Float) -> (Button, State -> IO State) -> Bool
+isInside (x, y) (MkButton (btnX, btnY) (w, h) _ _ , _) = isInside' x btnX w && isInside' y btnY h
+isInside (x, y) (MkPicButton (btnX, btnY) _ _ , _) = isInside' x btnX 100 && isInside' y btnY 100
+
+isInside' :: Float -> Float -> Float -> Bool
+isInside' mPos btnPos len = mPos >= btnPos - halfLen && mPos <= btnPos + halfLen
+    where halfLen = len / 2
+
+buttonsWithActions :: IO [(Button, State -> IO State)]
+buttonsWithActions = do
+    btns <- pausingButtons
+    return $ zip btns [
+                        \s -> return $ s {gameLoop = OptionsMenu},
+                        \s -> return $ s {gameLoop = Running},
+                        \s -> return $ s {gameLoop = GameQuitted},
+                        saveGame,
+                        loadGame
+                    ]
+
+saveGame :: State -> IO State
+saveGame = undefined
+
+loadGame :: State -> IO State
+loadGame = undefined
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)
