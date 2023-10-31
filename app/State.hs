@@ -78,26 +78,29 @@ mouseClick s = do
     a <- buttonsWithActions
     let mousePos = mousePosition s
         jeiaj = filter (isInside mousePos) a
-        fea = snd $ head jeiaj
-    fea s
-
-isInside :: (Float, Float) -> (Button, State -> IO State) -> Bool
-isInside (x, y) (MkButton (btnX, btnY) (w, h) _ _ , _) = isInside' x btnX w && isInside' y btnY h
-isInside (x, y) (MkPicButton (btnX, btnY) _ _ , _) = isInside' x btnX 100 && isInside' y btnY 100
-
-isInside' :: Float -> Float -> Float -> Bool
-isInside' mPos btnPos len = mPos >= btnPos - halfLen && mPos <= btnPos + halfLen
-    where halfLen = len / 2
+    if null jeiaj
+        then return s
+        else snd (head jeiaj) s
 
 buttonsWithActions :: IO [(Button, State -> IO State)]
 buttonsWithActions = do
-    btns <- pausingButtons
-    return $ zip btns [
+    settingsPic <- loadBMP "images\\settings.bmp"
+    leaderboardPic <- loadBMP "images\\leaderboard.bmp"
+    return $ zip    [ -- Buttons
+                        MkPicButton (450, 300) (greyN 0.4) settingsPic,
+                        MkButton (0, 250) (600, 100) (greyN 0.4) "Continue (esc)",
+                        MkButton (0, -50) (600, 100) (greyN 0.4) "Quit Game (0)",
+                        MkButton (-162, 100) (275, 100) (greyN 0.4) "Save (s)",
+                        MkButton (162, 100) (275, 100) (greyN 0.4) "Load (l)",
+                        MkPicButton (450, 150) (greyN 0.4) $ Scale 2 2 leaderboardPic
+                    ]
+                    [ -- Actions
                         \s -> return $ s {gameLoop = OptionsMenu},
                         \s -> return $ s {gameLoop = Running},
                         \s -> return $ s {gameLoop = GameQuitted},
                         saveGame,
-                        loadGame
+                        loadGame,
+                        \s -> return $ s {gameLoop = Leaderboard}
                     ]
 
 saveGame :: State -> IO State
@@ -106,5 +109,5 @@ saveGame = undefined
 loadGame :: State -> IO State
 loadGame = undefined
 
-data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
+data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard
                 deriving (Show, Eq, Enum)
