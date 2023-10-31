@@ -10,6 +10,9 @@ module Imports (module Graphics.Gloss,
                 mapPlus
                 ) where
 
+-- very great idea of the TA's, to implement imports and export all modules rightaway
+-- also added a mapPlus just for simplicity in different functions
+
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Graphics.Gloss.Data.Point

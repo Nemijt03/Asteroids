@@ -15,9 +15,11 @@ data PlayerState = PlayerState {
                 }
                 deriving (Show, Eq)
 
+-- will multiply the first argument with the playerAcceleration vector
 addAcceleration :: Float -> PlayerState -> PlayerState
 addAcceleration f ps = ps { playerAcceleration = f PMath.* playerFacing ps}
 
+-- will step playerState with time as an additional argument
 stepPlayerState :: PlayerState -> Float -> PlayerState
 stepPlayerState ps time =   ps {
                             playerPosition = wrap (mapPlus playerPosition playerSpeed ps),
@@ -26,7 +28,7 @@ stepPlayerState ps time =   ps {
                             playerReloadTime = playerReloadTime ps - 1
                         }
 
-
+-- will convert PlayerState to picture
 playerStateToPicture :: PlayerState -> IO Picture
 playerStateToPicture ps = do
                     (w, h) <- getScreenSize

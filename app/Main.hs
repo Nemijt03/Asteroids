@@ -14,4 +14,4 @@ main = do
               state            -- Initial state
               stateToPicture   -- View function
               input            -- Event function
-              step  
+              step

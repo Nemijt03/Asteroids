@@ -12,7 +12,7 @@ data Projectile = Projectile {
                 }
                 deriving (Show, Eq)
 
-
+-- will step projectile when timer is not finished
 stepProjectile :: Projectile -> Maybe Projectile
 stepProjectile p | projectileTimeAlive p <= 0 = Nothing
                  | otherwise = Just $ p {
@@ -20,13 +20,14 @@ stepProjectile p | projectileTimeAlive p <= 0 = Nothing
                         projectileTimeAlive = projectileTimeAlive p - 1
                     }
 
-
+-- converts list of projectiles to picture using projectile to picture
 projectilesToPicture :: [Projectile] -> IO Picture
 projectilesToPicture lst = do
-    bmp <- loadBMP "images\\ship32.bmp" -- projectile bmp ofc
+    bmp <- loadBMP "images\\ship32.bmp" -- projectile bmp
     size <- getScreenSize
     return $ Pictures $ Prelude.map (\x -> projectileToPicture x bmp size) lst
 
+-- converts projectile to picture using bitmap and screen size (although bitmap is not implemented yet)
 projectileToPicture :: Projectile -> Picture -> (Int, Int) -> Picture
 projectileToPicture p bmp size = Translate dx dy $ Scale sx sy $ Color white $ Text "."
     where 
