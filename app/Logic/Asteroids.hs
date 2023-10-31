@@ -25,17 +25,15 @@ stateToPicture state =
         --enemies <- enemiesToPicture (enemies state)
         projectilesPic <- projectilesToPicture (projectiles state)
         animationsPic <- animationsToPicture (animations state)
-        -- let gameLoopShow = case gameLoop state of
-            -- Running -> 
-            -- Paused ->
-            -- GameOver ->
         player <- playerStateToPicture (playerState state)
-        btns <- pausingButtons
-        pauseButtons <- buttonsToPicture btns
+
+        btns <- buttonsWithActions
+        let btns1 = map fst btns
+        pauseButtons <- buttonsToPicture btns1
         --score <- scoreToPicture (score state)
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
-        let pausePictures = case gameLoop state of
+        let gameLoopPictures = case gameLoop state of
                                 Running -> []
                                 _ -> [pauseButtons]
         let testPictures = [
@@ -49,23 +47,23 @@ stateToPicture state =
                             player--,
                             -- gameLoopShow --,
                             --score
-                        ] 
+                        ]
 
 
-        return (Pictures $ 
+        return (Pictures $
             statePictures ++
-            pausePictures ++ 
+            gameLoopPictures ++
             testPictures)
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
-step time state = do 
+step time state = do
     case gameLoop state of
         GameQuitted -> exitSuccess
         _ -> return $ stepGameState time state
 
 stepGameState :: Float -> State -> State
-stepGameState time s = 
+stepGameState time s =
     case gameLoop s of
                     Running -> stateFunctions (s {
                             -- stepEnemies (enemies state),
@@ -82,7 +80,7 @@ stepDownKeys :: S.Set Key -> State -> State
 stepDownKeys set s       = case S.toList set of
                                 [] -> s
                                 (key:keys) -> (if isJust searched
-                                            then stepDownKeys (S.fromList keys) newState 
+                                            then stepDownKeys (S.fromList keys) newState
                                             else stepDownKeys (S.fromList keys) s)
                                     where
                                         newState = handleAction (fromJust searched) s
@@ -90,7 +88,7 @@ stepDownKeys set s       = case S.toList set of
 
 -- | Handle user input
 input :: Event -> State -> IO State
-input e s = do 
+input e s = do
     let rtrn = return $ inputKey e s
     -- call mouseClick if LeftButton is clicked
     if gameLoop s /= Running
@@ -101,13 +99,13 @@ input e s = do
                     _ -> rtrn
                 _ -> rtrn
             _ -> rtrn
-        else rtrn 
+        else rtrn
 
 -- if a key is down, add to downKeys, but only when in the list of Useractions
 inputKey :: Event -> State -> State
-inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust searched) uaList) = s  
+inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust searched) uaList) = s
                                    | otherwise = s {downKeys = S.insert key (downKeys s)}
-                                   where 
+                                   where
                                     searched = search key $ inputs s
                                     uaList = if gameLoop s == Paused then pausedUserActions else runningUserActions
 -- remove key from downKeys

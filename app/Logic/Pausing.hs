@@ -2,9 +2,15 @@ module Pausing where
 
 import Imports
 import Graphics.UI.GLUT.Fonts
+import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 data Button = MkButton (Float, Float) (Float, Float) Color String | MkPicButton (Float, Float) Color Picture
+
+
+isInside :: Point -> (Button, a) -> Bool
+isInside mousePos (MkButton xy wh _ _ , _) = pointInBox mousePos (xy PMath.+ (0.5 PMath.* wh)) (xy PMath.- (0.5 PMath.* wh))
+isInside mousePos (MkPicButton xy _ _ , _) = pointInBox mousePos (xy PMath.+ (50, 50)) (xy PMath.- (50, 50))
 
 buttonToPicture :: Button -> IO Picture
 buttonToPicture (MkButton (x, y) (w, h) c s) = do
@@ -19,17 +25,6 @@ buttonToPicture (MkPicButton (x, y) c pic) = return $ Translate x y $ Pictures [
                                         Color c $ rectangleWire 100 100,
                                         pic
                                     ]
-
-pausingButtons :: IO [Button]
-pausingButtons = do 
-    settingsPic <- loadBMP "images\\settings.bmp"
-    return [
-                MkPicButton (400, 300) (greyN 0.4) settingsPic,
-                MkButton (0, 250) (600, 100) (greyN 0.4) "Continue (esc)",
-                MkButton (0, -50) (600, 100) (greyN 0.4) "Quit Game (0)",
-                MkButton (-162, 100) (275, 100) (greyN 0.4) "Save (s)",
-                MkButton (162, 100) (275, 100) (greyN 0.4) "Load (l)"
-            ]
 
 buttonsToPicture :: [Button] -> IO Picture
 buttonsToPicture [] = return Blank
