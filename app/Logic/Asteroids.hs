@@ -12,7 +12,7 @@ import System.Exit
 import Projectile
 import Collision
 import qualified Data.Set as S
-import Animation (animationsToPicture)
+import Animation 
 import SpawnEnemies
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
@@ -91,15 +91,18 @@ stepGameState time s =
 
     where stateFunctions = stepDownKeys (downKeys s) . 
                            spawnEnemy .
-                           removeDeadEnemies .
-                           doCollision . 
+                           removeDeadObjects .
                            stepEnemiesShoot .
                            stepEnemies .
                            stepProjectiles . 
+                           doCollision . 
                            stepAnimations
 
-removeDeadEnemies :: State -> State
-removeDeadEnemies = undefined
+removeDeadObjects :: State -> State
+removeDeadObjects s = let newA = mapMaybe maybeGetDeathAnimation (enemies s) in
+                        s{enemies = removeDead (enemies s),
+                        projectiles = removeDead (projectiles s),
+                        animations = removeAnimations (animations s) ++ newA} 
 
 
 stepDownKeys :: S.Set Key -> State -> State

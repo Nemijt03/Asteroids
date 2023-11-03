@@ -4,6 +4,7 @@ module State where
 import Player
 import Imports
 import Projectile
+import Collision
 import Animation
 import Enemy
 import HandleInputs
@@ -56,6 +57,18 @@ stepEnemies s@State{playerState,enemies} = s{enemies = map ( `moveEnemy` playerP
 
 stepAnimations :: State -> State
 stepAnimations s = s {animations = map stepAnimation (animations s)}
+
+stepEnemiesShoot :: State -> State
+stepEnemiesShoot s@State{enemies,projectiles,playerState} = let (newE, newP) = foldr getProj ([],[]) enemies
+                                                in s{enemies = newE, projectiles = projectiles ++ newP}
+    where
+        getProj e@MkSaucer{} (listE, listP) = (e{saucerReloadTime = 120}:listE,shootFromSaucer e (playerPosition playerState) : listP)
+        getProj e (listE, listP)             = (e:listE, listP)
+
+doCollision :: State -> State
+doCollision s@State{enemies, projectiles, playerState} = let (newE, newPr, newPl) = naiveCollision enemies projectiles playerState
+                                                     in s{enemies = newE, projectiles = newPr, playerState = newPl}
+
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu
                 deriving (Show, Eq, Enum)

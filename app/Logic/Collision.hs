@@ -1,7 +1,6 @@
 {-# language NamedFieldPuns #-}
-module Collision (doCollision) where
+module Collision where
 
-import State
 import Assoc
 import Player
 import Enemy
@@ -9,10 +8,7 @@ import Projectile
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import Graphics.Gloss.Data.Point
 
---main export module
-doCollision :: State -> State
-doCollision s@State{enemies, projectiles, playerState} = let (newE, newPr, newPl) = naiveCollision enemies projectiles playerState
-                                                     in s{enemies = newE, projectiles = newPr, playerState = newPl}
+
 
 naiveCollision :: [Enemy] -> [Projectile] -> PlayerState -> ([Enemy],[Projectile],PlayerState)
 naiveCollision enemies projectiles playerState = 
@@ -23,6 +19,8 @@ naiveCollision enemies projectiles playerState =
         newestPr           = collideList newerPr
     in
         (newestE,newestPr,newerPl)
+
+
 
 collideListWithList :: (Collidable a, Collidable b) => [a] -> [b] -> ([a], [b])
 collideListWithList listA listB =  helper listA listB [] 
@@ -48,7 +46,7 @@ data Square = Sq PMath.Point Width
 
 class Damagable a where
     doDamage :: a -> Int -> a
-
+    isDead :: a -> Bool
 class Squarable a where
     toSquare :: a -> Square
 
@@ -77,12 +75,16 @@ collide a b | isCollision a b = (doDamage a 1, doDamage b 1) --can be changed if
 instance Damagable Enemy where
     doDamage enemy@(MkAsteroid{asteroidHealth}) damage = enemy{asteroidHealth = asteroidHealth - damage}
     doDamage enemy@(MkSaucer  {saucerHealth})   damage = enemy{saucerHealth   = saucerHealth   - damage}
+    isDead MkAsteroid{asteroidHealth} = asteroidHealth < 1
+    isDead MkSaucer{saucerHealth}     = saucerHealth < 1
 
 instance Damagable PlayerState where
     doDamage player@PlayerState{playerLives} damage = player{playerLives = playerLives - damage}
+    isDead PlayerState{playerLives} = playerLives < 1
 
 instance Damagable Projectile where
     doDamage projectile _ = projectile{projectileTimeAlive = 0}
+    isDead Projectile{projectileTimeAlive} = projectileTimeAlive < 1
 
 --instances to convert the different objects to squares
 instance Squarable Enemy where
@@ -103,6 +105,9 @@ instance Collidable PlayerState
 
 instance Collidable Projectile
 
+--handy function
+removeDead :: Damagable a => [a] -> [a]
+removeDead = foldr (\x xs -> if isDead x then xs else x:xs) []
 
 --main idea: steal the quadtree idea from the midterm. Split it into 4 different sections and insert each collidable object. 
 --Then only check each list which every single one in each list, such that we only have to check a few object with each other, rather

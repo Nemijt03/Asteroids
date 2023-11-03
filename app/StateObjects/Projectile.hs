@@ -22,15 +22,24 @@ stepProjectile p = p {
                     }
 
 
+--maybe it spawning on top will cause it to hit the point it spawned on
+
 shootFromPlayer :: PlayerState -> Projectile
 shootFromPlayer s = Projectile {
-                                    projectilePosition = playerPosition s, -- PMath.+ 2 PMath.* playerFacing s,
+                                    projectilePosition = playerPosition s PMath.+ 2 PMath.* playerFacing s,
                                     projectileSpeed = playerSpeed s PMath.+ (50 PMath.* playerFacing s),
                                     projectileTimeAlive = 20
                                 }
 
-shootFromSaucer :: Enemy -> Projectile
-shootFromSaucer = undefined
+shootFromSaucer :: Enemy -> Point -> Projectile
+shootFromSaucer MkSaucer{saucerPosition = epos} ppos 
+ = Projectile {
+                projectilePosition  = epos PMath.+ ( 2 PMath.* (epos PMath.- ppos)),
+                projectileSpeed     =  50 PMath.* (epos PMath.- ppos),
+                projectileTimeAlive = 20
+              } 
+shootFromSaucer _ _ = undefined
+
 
 
 projectilesToPicture :: [Projectile] -> IO Picture

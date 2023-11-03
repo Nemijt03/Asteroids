@@ -5,6 +5,7 @@ import Assoc
 import ScreenLogic
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
+
 data Enemy = MkAsteroid {
                 asteroidPosition :: Point, 
                 asteroidSpeed :: Vector,
@@ -42,6 +43,7 @@ moveEnemy s@MkSaucer{saucerAcceleration = acc, saucerPosition = pos, saucerReloa
 changeAcceleration  :: Vector -> Point -> Point -> Vector
 changeAcceleration acc saucerPos playerPos = let toPlayer = rotateV (degToRad 10) $ normalizeV $ playerPos PMath.- saucerPos
                                              in acc PMath.+ toPlayer
+
 
 
 type SizeAssoc = Assoc Size Float

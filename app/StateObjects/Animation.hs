@@ -2,6 +2,8 @@ module Animation where
 
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import Enemy
+import Collision
 
 data Animation = MkAnimation {
                         animationPosition :: Point,
@@ -28,6 +30,13 @@ mkDeathAnimation position = MkAnimation {
                         ]   
                     }
 
+maybeGetDeathAnimation :: Enemy -> Maybe Animation
+maybeGetDeathAnimation e@MkSaucer{saucerPosition = p }    | isDead e  = Just $ mkDeathAnimation p
+                                                          | otherwise = Nothing
+maybeGetDeathAnimation e@MkAsteroid{asteroidPosition = p} | isDead e = Just $ mkDeathAnimation p
+                                                          | otherwise = Nothing
+
+
 animationsToPicture :: [Animation] -> IO Picture
 animationsToPicture as = do
     size <- getScreenSize
@@ -48,4 +57,10 @@ stepAnimation a | checkTime =  a {timeFrameActive = 0, onFrame = onFrame a + 1}
                 | otherwise =  a {timeFrameActive = timeFrameActive a + 1}
                 where 
                     checkTime = timeFrameActive a >= timePerFrame a
+
+removeAnimations :: [Animation] -> [Animation]
+removeAnimations = foldr (\x xs -> if onFrame x + 1 == length (pictureFrames x) && checkTime x then xs else x:xs) []
+            where
+                  checkTime a = timeFrameActive a >= timePerFrame a
+
 -- | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing
