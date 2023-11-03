@@ -2,18 +2,16 @@ module ScreenLogic where
 
 import Imports
 
+-- the logic game screen size (as opposed to the world screen size)
 screen :: (Float, Float)
 screen = (1280, 720)
 
-wrap :: Vector -> Vector
-wrap (x, y) = (wrapx x, wrapy y)
+-- wrap the Point which is out of bounds of the screen to the other side of the screen
+wrap :: Point -> Point
+wrap (x, y) = (wrap' (fst screen) x, wrap' (snd screen) y)
 
-wrapx :: Float -> Float
-wrapx x | x >= 0 && x < fst screen = x
-        | x < 0 = fst screen + x
-        | otherwise = x - fst screen
-
-wrapy :: Float -> Float
-wrapy y | y >= 0 && y < snd screen = y
-        | y < 0 = snd screen + y
-        | otherwise = y - snd screen
+-- helper to wrap one axis
+wrap' :: Float -> Float -> Float
+wrap' size pos | pos >= 0 && pos < size = pos
+               | pos < 0 = size + pos
+               | otherwise = pos - size

@@ -7,8 +7,13 @@ module Imports (module Graphics.Gloss,
                 module Graphics.Gloss.Geometry.Angle,
                 module Data.Bifunctor,
                 module Codec.BMP,
-                mapPlus
+                windowSize,
+                get,
+                mapPlus,
                 ) where
+
+-- very great idea of the TA's, to implement imports and export all modules rightaway
+-- also added a mapPlus just for simplicity in different functions
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
@@ -19,6 +24,8 @@ import Graphics.Gloss.Interface.Environment
 import Graphics.Gloss.Geometry.Angle
 import Data.Bifunctor
 import Codec.BMP
+import Graphics.UI.GLUT.Window (windowSize)
+import Graphics.UI.GLUT (get)
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 mapPlus :: (a -> Point) -> (a -> Point) -> a -> Point

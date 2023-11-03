@@ -8,52 +8,13 @@ import HandleInputs
 import State
 import Assoc
 import System.Exit
-import Projectile
-import Pausing
 import qualified Data.Set as S
-import Animation (animationsToPicture)
+import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 removeDeadEnemies :: State -> State
 removeDeadEnemies = undefined
-
-
-stateToPicture :: State -> IO Picture
-stateToPicture state =
-    do
-        --enemies <- enemiesToPicture (enemies state)
-        projectilesPic <- projectilesToPicture (projectiles state)
-        animationsPic <- animationsToPicture (animations state)
-        player <- playerStateToPicture (playerState state)
-
-        btns <- buttonsWithActions
-        let btns1 = map fst btns
-        pauseButtons <- buttonsToPicture btns1
-        --score <- scoreToPicture (score state)
-        -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
-
-        let gameLoopPictures = case gameLoop state of
-                                Running -> []
-                                _ -> [pauseButtons]
-        let testPictures = [
-                            --Test:
-                            -- Color white $ Text $ show $ toList $ downKeys state,
-                        ]
-        let statePictures = [
-                            --enemies,
-                            projectilesPic,
-                            animationsPic,
-                            player--,
-                            -- gameLoopShow --,
-                            --score
-                        ]
-
-
-        return (Pictures $
-            statePictures ++
-            gameLoopPictures ++
-            testPictures)
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
@@ -62,6 +23,7 @@ step time state = do
         GameQuitted -> exitSuccess
         _ -> return $ stepGameState time state
 
+-- pure step function.
 stepGameState :: Float -> State -> State
 stepGameState time s =
     case gameLoop s of
@@ -76,6 +38,7 @@ stepGameState time s =
 
     where stateFunctions = stepDownKeys (downKeys s) . stepProjectiles . stepAnimations
 
+-- step through the set of keys which are being pressed at the time
 stepDownKeys :: S.Set Key -> State -> State
 stepDownKeys set s       = case S.toList set of
                                 [] -> s
@@ -110,12 +73,14 @@ inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust 
                                     uaList = if gameLoop s == Paused then pausedUserActions else runningUserActions
 -- remove key from downKeys
 inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
-inputKey (EventMotion pos) s = s {mousePosition = pos}
+inputKey (EventMotion pos) s | gameLoop s == Running = handleMouseMove $ s {mousePosition = pos} 
+                             | otherwise = s {mousePosition = pos}
 inputKey _ s = s
 
+-- turn a Useraction into a change in the state
 handleAction :: UserAction -> State -> State
-handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
-                    | ua == TurnRight = rotatePlayer (degToRad 90)
+handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-20))
+                    | ua == TurnRight = rotatePlayer (degToRad 20)
                     | ua == Forward = accelerate 3
                     | ua == Backward = accelerate (-3)
                     | ua == Shoot = shootFromPlayer s
@@ -123,11 +88,21 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-90))
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
                         _ -> s
-                    | ua == QuitGame = s {gameLoop = GameQuitted}
-                    | ua == Options = s {gameLoop = OptionsMenu}
+                    | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
+                    | ua == TriggerOptions = s {gameLoop = OptionsMenu}
                     | otherwise = s
                     where
                         ps = playerState s
                         chngPs x = s {playerState = x}
                         rotatePlayer rotation = chngPs (ps {playerFacing = rotation `rotateV` playerFacing ps})
                         accelerate acceleration = chngPs (addAcceleration acceleration ps)
+
+handleMouseMove :: State -> State
+handleMouseMove s = s {
+                        playerState = (playerState s) {playerFacing = facing},
+                        options = (options s) {mouseInput = not $ mouseInput (options s)}
+                    }
+                where
+                    facing = normalizeV vec
+                    vec = ((x, 360 - y) PMath.+ (640, 0)) PMath.- playerPosition (playerState s)
+                    (x, y) = mousePosition s

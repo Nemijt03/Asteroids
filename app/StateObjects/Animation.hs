@@ -3,6 +3,7 @@ module Animation where
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
+-- Animation data type
 data Animation = MkAnimation {
                         animationPosition :: Point,
                         onFrame :: Int,
@@ -12,9 +13,9 @@ data Animation = MkAnimation {
                     }
                     deriving (Eq, Show)
 
--- prototype
-mkDeathAnimation :: Point -> IO Animation
-mkDeathAnimation position = do
+-- creates explosion on specified Point with bitmaps loaded from file
+mkExplosion :: Point -> IO Animation
+mkExplosion position = do
     bmp1 <- loadBMP "images/explosion/1.bmp"
     bmp2 <- loadBMP "images/explosion/2.bmp"
     bmp3 <- loadBMP "images/explosion/3.bmp"
@@ -36,21 +37,7 @@ mkDeathAnimation position = do
                         ]   
                     }
 
-animationsToPicture :: [Animation] -> IO Picture
-animationsToPicture as = do
-    size <- getScreenSize
-    return $ Pictures $ map (`animationToPicture` size) as
-
-animationToPicture :: Animation -> (Int, Int) -> Picture
-animationToPicture a (w, h) = do
-    let (sx, sy) = (1, 1)
-        (cx, cy) = (w `div` 2, h `div` 2)
-        pos = second (fromIntegral h -) $ animationPosition a
-        (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
-        in
-        Translate dx dy $ Scale sx sy $ pictureFrames a !! onFrame a
-
-
+-- step animation if the time is not expired yet
 stepAnimation :: Animation -> Maybe Animation
 stepAnimation a | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing
                 | checkTime = Just $ a {timeFrameActive = 0, onFrame = onFrame a + 1}
@@ -58,6 +45,7 @@ stepAnimation a | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothi
                 where 
                     checkTime = timeFrameActive a >= timePerFrame a
 
+-- will devide bmpdata into different sections for easy explosion (not implemented yet)
 bmpDataToPieces :: BitmapData -> [Picture]
 bmpDataToPieces bmpData = [
                             BitmapSection tl bmpData,
