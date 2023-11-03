@@ -80,6 +80,7 @@ executable Asteroids
         "Animation"
         "State"
         "Pausing"
+        "Renderable"
         
 
     -- LANGUAGE extensions used by modules in this package.

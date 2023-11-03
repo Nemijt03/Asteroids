@@ -2,6 +2,7 @@ module Main where
 
 import Imports
 import Asteroids
+import Renderable
 import State
 
 main :: IO ()

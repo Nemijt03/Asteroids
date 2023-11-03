@@ -40,7 +40,7 @@ standardState = do
     let playerBMPData = bitmapDataOfBMP playerBMP
     return $ State {
             enemies = [],
-            projectiles = [], --Projectile (500, 360) (0,0) 10],
+            projectiles = [], --Projectile (500, 360) (0,0) 30],
             animations = [deathAnimation],
             playerState = PlayerState {
                 playerPosition = (640, 360),

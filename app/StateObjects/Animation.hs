@@ -37,22 +37,6 @@ mkExplosion position = do
                         ]   
                     }
 
--- uses animationToPicture to convert multiple animations to one picture
-animationsToPicture :: [Animation] -> IO Picture
-animationsToPicture as = do
-    size <- getScreenSize
-    return $ Pictures $ map (`animationToPicture` size) as
-
--- converts animation with screen size to picture
-animationToPicture :: Animation -> (Int, Int) -> Picture
-animationToPicture a (w, h) = do
-    let (sx, sy) = (1, 1)
-        (cx, cy) = (w `div` 2, h `div` 2)
-        pos = second (fromIntegral h -) $ animationPosition a
-        (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
-        in
-        Translate dx dy $ Scale sx sy $ pictureFrames a !! onFrame a
-
 -- step animation if the time is not expired yet
 stepAnimation :: Animation -> Maybe Animation
 stepAnimation a | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing

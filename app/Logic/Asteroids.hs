@@ -8,52 +8,13 @@ import HandleInputs
 import State
 import Assoc
 import System.Exit
-import Projectile
-import Pausing
 import qualified Data.Set as S
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
-import Animation (animationsToPicture)
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 removeDeadEnemies :: State -> State
 removeDeadEnemies = undefined
-
-stateToPicture :: State -> IO Picture
-stateToPicture state =
-    do
-        --enemies <- enemiesToPicture (enemies state)
-        projectilesPic <- projectilesToPicture (projectiles state)
-        animationsPic <- animationsToPicture (animations state)
-        player <- playerStateToPicture (playerState state)
-
-        btns <- buttonsWithActions
-        let btns1 = map fst btns
-        pauseButtons <- buttonsToPicture btns1
-        --score <- scoreToPicture (score state)
-        -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
-
-        let gameLoopPictures = case gameLoop state of
-                                Running -> []
-                                _ -> [pauseButtons]
-        let testPictures = [
-                            --Test:
-                            -- Color white $ Text $ show $ toList $ downKeys state,
-                        ]
-        let statePictures = [
-                            --enemies,
-                            projectilesPic,
-                            animationsPic,
-                            player--,
-                            -- gameLoopShow --,
-                            --score
-                        ]
-
-
-        return (Pictures $
-            statePictures ++
-            gameLoopPictures ++
-            testPictures)
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
@@ -91,7 +52,6 @@ stepDownKeys set s       = case S.toList set of
 -- | Handle user input
 input :: Event -> State -> IO State
 input e s = do
-    putStrLn (show (playerPosition $ playerState s) ++ "&&" ++ show (mousePosition s PMath.+ (640, 360)))
     let rtrn = return $ inputKey e s
     -- call mouseClick if LeftButton is clicked
     if gameLoop s /= Running
