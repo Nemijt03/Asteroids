@@ -1,15 +1,17 @@
+{-# language NamedFieldPuns #-}
 module State where
 
 import Player
 import Imports
 import Projectile
+import Collision
 import Animation
 import Enemy
 import HandleInputs
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import qualified Data.Set as S
 import Pausing
-
+import System.Random
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
@@ -20,12 +22,13 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         score :: Int,
                         timePlayed :: Float,
                         gameLoop :: GameLoop,
-                        inputs :: Inputs,
                         downKeys :: S.Set Key,
                         mousePosition :: (Float, Float),
-                        options :: Options
-                        }
-                            deriving (Show, Eq)
+                        options :: Options,
+                        randomG :: StdGen,
+                        inputs :: Inputs
+            }
+            deriving (Show, Eq)
 
 data Options = MkOptions {
                         mouseInput :: Bool,
@@ -57,19 +60,38 @@ standardState = do
             inputs = standardInputs,
             downKeys = S.empty,
             mousePosition = (0, 0),
-            options = standardOptions
+            options = standardOptions,
+            randomG = getPredictableRandom
 }
+
+getPredictableRandom :: StdGen 
+getPredictableRandom = mkStdGen 10 --this will always give the same result 
 
 standardOptions :: Options
 standardOptions = MkOptions {mouseInput = False, ietsAnders = False}
 
--- will step projectiles and delete Nothing's out of the list
+-- will step projectiles
 stepProjectiles :: State -> State
-stepProjectiles s = s {projectiles = mapMaybe stepProjectile (projectiles s)}
+stepProjectiles s = s {projectiles = map stepProjectile (projectiles s)}
 
--- will step animations and delete Nothing's out of the list
+stepEnemies :: State -> State
+stepEnemies s@State{playerState,enemies} = s{enemies = map ( `moveEnemy` playerPosition playerState) enemies}
+
+-- will step animations 
 stepAnimations :: State -> State
-stepAnimations s = s {animations = mapMaybe stepAnimation (animations s)}
+stepAnimations s = s {animations = map stepAnimation (animations s)}
+
+stepEnemiesShoot :: State -> State
+stepEnemiesShoot s@State{enemies,projectiles,playerState} = let (newE, newP) = foldr getProj ([],[]) enemies
+                                                in s{enemies = newE, projectiles = projectiles ++ newP}
+    where
+        getProj e@MkSaucer{} (listE, listP) = (e{saucerReloadTime = 120}:listE,shootFromSaucer e (playerPosition playerState) : listP)
+        getProj e (listE, listP)             = (e:listE, listP)
+
+doCollision :: State -> State
+doCollision s@State{enemies, projectiles, playerState} = let (newE, newPr, newPl) = naiveCollision enemies projectiles playerState
+                                                     in s{enemies = newE, projectiles = newPr, playerState = newPl}
+
 
 -- will be death of player and spawn in death animation
 playerDies :: State -> State
@@ -86,10 +108,6 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
                                     projectileTimeAlive = 20
                                     } : projectiles s,
                                 playerState = (playerState s) {playerReloadTime = 5} }
-
--- same logic as from player probably
-shootFromSaucer :: Enemy -> Projectile
-shootFromSaucer = undefined
 
 -- event handler of clicking while paused
 mouseClick :: State -> IO State

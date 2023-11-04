@@ -37,13 +37,35 @@ mkExplosion position = do
                         ]   
                     }
 
--- step animation if the time is not expired yet
-stepAnimation :: Animation -> Maybe Animation
-stepAnimation a | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing
-                | checkTime = Just $ a {timeFrameActive = 0, onFrame = onFrame a + 1}
-                | otherwise = Just $ a {timeFrameActive = timeFrameActive a + 1}
+
+
+animationsToPicture :: [Animation] -> IO Picture
+animationsToPicture as = do
+    size <- getScreenSize
+    return $ Pictures $ map (`animationToPicture` size) as
+
+animationToPicture :: Animation -> (Int, Int) -> Picture
+animationToPicture a (w, h) = do
+    let (sx, sy) = (1, 1)
+        (cx, cy) = (w `div` 2, h `div` 2)
+        pos = second (fromIntegral h -) $ animationPosition a
+        (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
+        in
+        Translate dx dy $ Scale sx sy $ {-head $ -} pictureFrames a !! onFrame a
+
+
+stepAnimation :: Animation -> Animation
+stepAnimation a | checkTime =  a {timeFrameActive = 0, onFrame = onFrame a + 1}
+                | otherwise =  a {timeFrameActive = timeFrameActive a + 1}
                 where 
                     checkTime = timeFrameActive a >= timePerFrame a
+
+removeAnimations :: [Animation] -> [Animation]
+removeAnimations = foldr (\x xs -> if onFrame x + 1 == length (pictureFrames x) && checkTime x then xs else x:xs) []
+            where
+                  checkTime a = timeFrameActive a >= timePerFrame a
+
+-- | checkTime && onFrame a + 1 == length (pictureFrames a) = Nothing
 
 -- will devide bmpdata into different sections for easy explosion (not implemented yet)
 bmpDataToPieces :: BitmapData -> [Picture]

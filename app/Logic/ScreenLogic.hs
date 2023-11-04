@@ -6,6 +6,12 @@ import Imports
 screen :: (Float, Float)
 screen = (1280, 720)
 
+screenWidth :: Float
+screenWidth = fst screen
+
+screenHeight :: Float
+screenHeight = snd screen
+
 -- wrap the Point which is out of bounds of the screen to the other side of the screen
 wrap :: Point -> Point
 wrap (x, y) = (wrap' (fst screen) x, wrap' (snd screen) y)

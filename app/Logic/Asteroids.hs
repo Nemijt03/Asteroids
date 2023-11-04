@@ -8,35 +8,48 @@ import HandleInputs
 import State
 import Assoc
 import System.Exit
+import Collision
 import qualified Data.Set as S
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import Animation 
+import SpawnEnemies
+import Renderable
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
-
-removeDeadEnemies :: State -> State
-removeDeadEnemies = undefined
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
 step time state = do
     case gameLoop state of
         GameQuitted -> exitSuccess
-        _ -> return $ stepGameState time state
+        _ -> do 
+            newA <- mapM (mkExplosion . getPosition) (filter isDead (enemies state))
+            return $ stepGameState time state{animations = animations state ++ newA}
 
 -- pure step function.
 stepGameState :: Float -> State -> State
 stepGameState time s =
     case gameLoop s of
                     Running -> stateFunctions (s {
-                            -- stepEnemies (enemies state),
-                            playerState = stepPlayerState (playerState s) time
-                            -- stepScore (score state)
-                            -- stepTimePlayed
+                            playerState = stepPlayerState (playerState s) time,
+                            timePlayed = timePlayed s + 1
                             -- stepGameLoop
                         })
                     _ -> stepDownKeys (downKeys s) s
 
-    where stateFunctions = stepDownKeys (downKeys s) . stepProjectiles . stepAnimations
+    where stateFunctions = stepDownKeys (downKeys s) . 
+                           spawnEnemy .
+                           removeDeadObjects .
+                           stepEnemiesShoot .
+                           stepEnemies .
+                           stepProjectiles . 
+                           doCollision . 
+                           stepAnimations
+
+removeDeadObjects :: State -> State
+removeDeadObjects s = s{enemies = removeDead (enemies s),
+                        projectiles = removeDead (projectiles s),
+                        animations = removeAnimations (animations s) } 
 
 -- step through the set of keys which are being pressed at the time
 stepDownKeys :: S.Set Key -> State -> State
@@ -48,6 +61,8 @@ stepDownKeys set s       = case S.toList set of
                                     where
                                         newState = handleAction (fromJust searched) s
                                         searched = search key standardInputs
+
+
 
 -- | Handle user input
 input :: Event -> State -> IO State
