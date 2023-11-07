@@ -1,7 +1,9 @@
+{-# language NamedFieldPuns #-}
 module Renderable where
 
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import Assoc
 import Projectile
 import Player
 import Animation
@@ -15,7 +17,7 @@ import Pausing
 stateToPicture :: State -> IO Picture
 stateToPicture state =
     do
-        --enemies <- enemiesToPicture (enemies state)
+        enemiesPic <- translatedRender $ enemies state
         projectilesPic <- translatedRender $ projectiles state
         animationsPic <- translatedRender $ animations state
         player <- translatedRender $ playerState state
@@ -34,7 +36,7 @@ stateToPicture state =
                             -- Color white $ Text $ show $ toList $ downKeys state,
                         ]
         let statePictures = [
-                            --enemies,
+                            enemiesPic,
                             projectilesPic,
                             animationsPic,
                             player--,
@@ -85,8 +87,14 @@ instance Renderable Animation where
     getPosition = animationPosition
 
 instance Renderable Enemy where
-    render _ = undefined
-    getPosition = undefined
+    render e = case e of 
+            MkAsteroid{asteroidSize} -> Color yellow $ Circle (enemySize asteroidSize)
+            MkSaucer{saucerSize} -> Color red $ Circle (enemySize saucerSize)
+        where
+            enemySize size = unsafeSearch size standardSize
+
+    getPosition MkAsteroid{asteroidPosition} = asteroidPosition
+    getPosition MkSaucer{saucerPosition} = saucerPosition
 
 
 instance (Renderable a) => Renderable [a] where

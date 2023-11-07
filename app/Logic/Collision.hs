@@ -1,4 +1,6 @@
 {-# language NamedFieldPuns #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use infix" #-}
 module Collision (naiveCollision,removeDead,isDead) where
 
 import Assoc
