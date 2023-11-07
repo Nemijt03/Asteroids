@@ -49,7 +49,7 @@ projectilesToPicture lst = do
     return $ Pictures $ Prelude.map (\x -> projectileToPicture x bmp size) lst
 
 projectileToPicture :: Projectile -> Picture -> (Int, Int) -> Picture
-projectileToPicture p bmp size = Translate dx dy $ Scale sx sy $ Color white $ Text "."
+projectileToPicture p _ size = Translate dx dy $ Scale sx sy $ Color white $ Text "."
     where 
         (w, h) = size
         (sx, sy) = (0.2, 0.2)

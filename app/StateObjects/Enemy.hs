@@ -1,3 +1,4 @@
+{-# language NamedFieldPuns #-}
 module Enemy where
 
 import Imports
@@ -22,6 +23,11 @@ data Enemy = MkAsteroid {
                 saucerReloadTime :: Float
             }
                 deriving (Show, Eq)
+
+getEnemySize :: Enemy -> EnemySize
+getEnemySize MkAsteroid{asteroidSize} = asteroidSize
+getEnemySize MkSaucer{saucerSize} = saucerSize
+
 data EnemySize = Small | Medium | Large | ExtraLarge
                 deriving (Show, Eq, Ord)
 
