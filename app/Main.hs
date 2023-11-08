@@ -4,6 +4,7 @@ import Imports
 import Asteroids
 import Renderable
 import State
+import ScreenLogic
 
 main :: IO ()
 main = do
@@ -11,7 +12,7 @@ main = do
     -- display (InWindow "window" (1280, 720) (0,0)) black stateToPicture
     playIO (InWindow "Asteroids" (1280, 720) (0, 0)) -- Or FullScreen
               black            -- Background color
-              30               -- Frames per second
+              fps               -- Frames per second
               state            -- Initial state
               stateToPicture   -- View function
               input            -- Event function

@@ -86,7 +86,10 @@ inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust 
                                    | otherwise = s {downKeys = S.insert key (downKeys s)}
                                    where
                                     searched = search key $ inputs s
-                                    uaList = if gameLoop s == Paused then pausedUserActions else runningUserActions
+                                    uaList = case gameLoop s of
+                                        Running -> runningUserActions
+                                        _ -> pausedUserActions
+                                        
 -- remove key from downKeys
 inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
 inputKey (EventMotion pos) s | gameLoop s == Running = handleMouseMove $ s {mousePosition = pos} 
@@ -101,9 +104,8 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-20))
                     | ua == Backward = accelerate (-3)
                     | ua == Shoot = shootFromPlayer s
                     | ua == Pause = case gameLoop s of
-                        Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
-                        _ -> s
+                        _ -> s {gameLoop = Paused}
                     | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
                     | ua == TriggerOptions = s {gameLoop = OptionsMenu}
                     | otherwise = s
