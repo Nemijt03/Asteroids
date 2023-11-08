@@ -1,11 +1,12 @@
 {-# language NamedFieldPuns #-}
+{-# LANGUAGE DeriveGeneric #-}
 module Enemy where
 
 import Imports
 import Assoc
 import ScreenLogic
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
-
+import GHC.Generics
 
 data Enemy = MkAsteroid {
                 asteroidPosition :: Point, 
@@ -22,7 +23,7 @@ data Enemy = MkAsteroid {
                 saucerHealth :: Int,
                 saucerReloadTime :: Float
             }
-                deriving (Show, Eq)
+                deriving (Show, Eq,Generic)
 
 getEnemySize :: Enemy -> EnemySize
 getEnemySize MkAsteroid{asteroidSize} = asteroidSize

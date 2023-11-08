@@ -1,8 +1,10 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Player where
 
 import ScreenLogic
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import GHC.Generics
 
 data PlayerState = PlayerState {
                 playerPosition :: Point,
@@ -13,7 +15,7 @@ data PlayerState = PlayerState {
                 playerReloadTime :: Float,
                 playerBitmapData :: BitmapData
                 }
-                deriving (Show, Eq)
+                deriving (Show, Eq,Generic)
 
 -- will multiply the first argument with the playerAcceleration vector
 addAcceleration :: Float -> PlayerState -> PlayerState

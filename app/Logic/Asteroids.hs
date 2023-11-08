@@ -102,7 +102,8 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-20))
                     | ua == Pause = case gameLoop s of
                         Running -> s {gameLoop = Paused}
                         Paused -> s {gameLoop = Running}
-                        _ -> s
+                        Saving -> s{gameLoop = Paused}
+                        Loading -> s {gameLoop = Paused}
                     | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
                     | ua == TriggerOptions = s {gameLoop = OptionsMenu}
                     | otherwise = s

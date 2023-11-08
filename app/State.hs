@@ -1,4 +1,5 @@
 {-# language NamedFieldPuns #-}
+{-# LANGUAGE DeriveGeneric #-}
 module State where
 
 import Player
@@ -12,6 +13,8 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import qualified Data.Set as S
 import Pausing
 import System.Random
+import GHC.Generics
+
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
@@ -28,13 +31,13 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         randomG :: StdGen,
                         inputs :: Inputs
             }
-            deriving (Show, Eq)
+            deriving (Generic, Show, Eq)
 
 data Options = MkOptions {
                         mouseInput :: Bool,
                         ietsAnders :: Bool
                     }
-                        deriving (Show, Eq)
+                        deriving (Generic, Show, Eq)
 
 standardState :: IO State
 standardState = do
@@ -135,10 +138,13 @@ buttonsWithActions = do
                         \s -> return $ s {gameLoop = OptionsMenu},
                         \s -> return $ s {gameLoop = Running},
                         \s -> return $ s {gameLoop = GameQuitted},
-                        saveGame,
-                        loadGame,
+                        \s -> return $ s {gameLoop = Saving},
+                        \s -> return $ s {gameLoop = Loading},
                         \s -> return $ s {gameLoop = Leaderboard}
                     ]
+
+
+
 
 saveGame :: State -> IO State
 saveGame = undefined
@@ -146,5 +152,5 @@ saveGame = undefined
 loadGame :: State -> IO State
 loadGame = undefined
 
-data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard
+data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | Saving | Loading
                 deriving (Show, Eq, Enum)

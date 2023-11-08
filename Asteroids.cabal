@@ -81,7 +81,7 @@ executable Asteroids
         "SpawnEnemies"
         "Pausing"
         "Renderable"
-        
+        "SavingAndLoading"
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:
@@ -92,7 +92,8 @@ executable Asteroids
                         random >=1.2.1.1,
                         containers,
                         GLUT,
-                        bmp 
+                        bmp,
+                        aeson 
 
     -- Directories containing source files.
     hs-source-dirs:   app

@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Projectile where
 
 import Imports
@@ -5,7 +6,7 @@ import ScreenLogic
 import Enemy
 import Player
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
-
+import GHC.Generics
 
 data Projectile = Projectile {
                 projectilePosition :: Point,
@@ -13,7 +14,7 @@ data Projectile = Projectile {
                 projectileTimeAlive :: Int,
                 projectileImmuneTime  :: Int
                 }
-                deriving (Show, Eq)
+                deriving (Generic, Show, Eq)
 
 
 stepProjectile :: Projectile ->  Projectile

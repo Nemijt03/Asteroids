@@ -1,8 +1,9 @@
+{-# LANGUAGE DeriveGeneric #-}
 module Animation where
 
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
-
+import GHC.Generics
 -- Animation data type
 data Animation = MkAnimation {
                         animationPosition :: Point,
@@ -11,7 +12,7 @@ data Animation = MkAnimation {
                         timePerFrame :: Float,
                         pictureFrames :: [Picture]
                     }
-                    deriving (Eq, Show)
+                    deriving (Eq, Show,Generic)
 
 -- creates explosion on specified Point with bitmaps loaded from file
 mkExplosion :: Point -> IO Animation
