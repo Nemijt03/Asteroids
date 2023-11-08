@@ -1,14 +1,18 @@
+{-# LANGUAGE DeriveGeneric #-}
 module HandleInputs where
+
 
 import Assoc
 import Imports
 import qualified Data.Set as S
+import GHC.Generics
+
 
 type Inputs = Assoc Key UserAction
 
 -- all different actions an event can trigger.
 data UserAction = TurnLeft | TurnRight | Forward | Backward | Shoot | Pause | TriggerQuitGame | TriggerOptions | None
-            deriving (Eq, Show, Enum, Ord, Bounded)
+            deriving (Eq, Show, Enum, Ord, Bounded, Generic)
 
 -- the standard inputs to be put in the standardState
 standardInputs :: Inputs

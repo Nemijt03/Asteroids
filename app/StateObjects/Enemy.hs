@@ -23,14 +23,14 @@ data Enemy = MkAsteroid {
                 saucerHealth :: Int,
                 saucerReloadTime :: Float
             }
-                deriving (Show, Eq,Generic)
+                deriving (Show, Eq, Generic)
 
 getEnemySize :: Enemy -> EnemySize
 getEnemySize MkAsteroid{asteroidSize} = asteroidSize
 getEnemySize MkSaucer{saucerSize} = saucerSize
 
 data EnemySize = Small | Medium | Large | ExtraLarge
-                deriving (Show, Eq, Ord)
+                deriving (Show, Eq, Ord, Generic)
 
 
 moveEnemy :: Enemy -> Point -> Enemy --requires the playerPositon to be able to change acceleration
