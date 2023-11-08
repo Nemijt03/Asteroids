@@ -8,7 +8,6 @@ import Collision
 import Animation
 import Enemy ( Enemy(MkSaucer, saucerReloadTime), moveEnemy )
 import HandleInputs
-import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import qualified Data.Set as S
 import System.Random
 
@@ -38,7 +37,7 @@ data Options = MkOptions {
 standardState :: IO State
 standardState = do
     Right playerBMP <- readBMP "images\\ship32.bmp"
-    deathAnimation <- mkExplosion (600, 360)
+    _ <- mkExplosion (600, 360)
     let playerBMPData = bitmapDataOfBMP playerBMP
     return $ State {
             enemies = [],
