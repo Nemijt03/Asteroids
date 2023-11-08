@@ -6,11 +6,10 @@ import Imports
 import Projectile
 import Collision
 import Animation
-import Enemy
+import Enemy ( Enemy(MkSaucer, saucerReloadTime), moveEnemy )
 import HandleInputs
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import qualified Data.Set as S
-import Pausing
 import System.Random
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
@@ -70,6 +69,10 @@ getPredictableRandom = mkStdGen 10 --this will always give the same result
 standardOptions :: Options
 standardOptions = MkOptions {mouseInput = False, ietsAnders = False}
 
+getLeaderBoard :: IO [(String, Int)] -- (Name, Score)
+-- PlaceHolder
+getLeaderBoard = return [("sef", 2),("fea",10),("as",42),("je",102),("sef", 2),("fea",10),("as",42),("je",102),("sef", 2),("fea",10),("as",42),("je",102),("sef", 2),("fea",10),("as",42),("je",102)]
+
 -- will step projectiles
 stepProjectiles :: State -> State
 stepProjectiles s = s {projectiles = map stepProjectile (projectiles s)}
@@ -107,44 +110,6 @@ shootFromPlayer :: State -> State
 shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
                   | otherwise = s {projectiles = projectileFromPlayer (playerState s) : projectiles s,
                                    playerState = (playerState s) {playerReloadTime = 5} }
-
--- event handler of clicking while paused
-mouseClick :: State -> IO State
-mouseClick s = do
-    a <- buttonsWithActions
-    let mousePos = mousePosition s
-        jeiaj = filter (isInside mousePos) a
-    if null jeiaj
-        then return s
-        else snd (head jeiaj) s
-
--- pausing buttons with their actions for mouseClick
-buttonsWithActions :: IO [(Button, State -> IO State)]
-buttonsWithActions = do
-    settingsPic <- loadBMP "images\\settings.bmp"
-    leaderboardPic <- loadBMP "images\\leaderboard.bmp"
-    return $ zip    [ -- Buttons
-                        MkPicButton (450, 300) (greyN 0.4) settingsPic,
-                        MkButton (0, 250) (600, 100) (greyN 0.4) "Continue (esc)",
-                        MkButton (0, -50) (600, 100) (greyN 0.4) "Quit Game (0)",
-                        MkButton (-162, 100) (275, 100) (greyN 0.4) "Save (s)",
-                        MkButton (162, 100) (275, 100) (greyN 0.4) "Load (l)",
-                        MkPicButton (450, 150) (greyN 0.4) $ Scale 2 2 leaderboardPic
-                    ]
-                    [ -- Actions
-                        \s -> return $ s {gameLoop = OptionsMenu},
-                        \s -> return $ s {gameLoop = Running},
-                        \s -> return $ s {gameLoop = GameQuitted},
-                        saveGame,
-                        loadGame,
-                        \s -> return $ s {gameLoop = Leaderboard}
-                    ]
-
-saveGame :: State -> IO State
-saveGame = undefined
-
-loadGame :: State -> IO State
-loadGame = undefined
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard
                 deriving (Show, Eq, Enum)
