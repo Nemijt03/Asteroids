@@ -10,7 +10,8 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 --main export module
 spawnEnemy :: State -> State
-spawnEnemy s@State{timePlayed,enemies,randomG} | length enemies < maxEnemies timePlayed = --if there still is room
+spawnEnemy s@State{timePlayed,enemies,randomG} | mod (floor timePlayed) 30 == 0 
+                                                 && length enemies < maxEnemies timePlayed = --if there still is room
     let (r1, g') = random randomG in--random between 0 and 1
 
         case compare (spawnChance timePlayed) r1 of --if it will spawn one
@@ -18,12 +19,12 @@ spawnEnemy s@State{timePlayed,enemies,randomG} | length enemies < maxEnemies tim
             _  -> let (r2, g'') = random randomG in
 
                     case compare (enemyChance timePlayed) r2 of --which one it will spawn
-                        LT  -> let (saucer, lastg) = makeRandomSaucer g'' in
+                        GT  -> let (saucer, lastg) = makeRandomSaucer g'' in
                                 s{enemies = saucer : enemies, randomG = lastg }
 
                         _   -> let (asteroid, lastg) = makeRandomAsteroid g'' in
                                 s{enemies = asteroid : enemies, randomG = lastg }
-                                                    | otherwise                   = s
+                                                | otherwise                   = s
 
 
 --limits and chances
@@ -43,7 +44,7 @@ enemyChance time = min 0.7 (fromInteger(floor (time / 600)) * 0.04)
 makeRandomAsteroid :: StdGen -> (Enemy, StdGen)
 makeRandomAsteroid g =
     let
-        (randomSpeed, g')       = getRandomSpeed 1 g
+        (randomSpeed, g')       = getRandomSpeed 10 g
         (randomPosition, g'')   = getRandomPoint randomSpeed g'
         (randomHealth,g''')     = randomR (1,4) g''
         (randomSize,lastG)      = getRandomSize g'''
@@ -60,14 +61,14 @@ makeRandomAsteroid g =
 makeRandomSaucer :: StdGen -> (Enemy,StdGen)
 makeRandomSaucer g =
     let
-        (randomSpeed, g')       = getRandomSpeed 1 g
+        (randomSpeed, g')       = getRandomSpeed 10 g
         (randomPosition, g'')   = getRandomPoint randomSpeed g'
-        (randomHealth,g''')     = randomR (2,7) g''
+        (randomHealth,g''')     = randomR (2,7) g'' :: (Int, StdGen)
         (randomSize,lastG)      = getRandomSize g'''
     in
     (MkSaucer{
         saucerAcceleration = (0,0),
-        saucerHealth        = randomHealth,
+        saucerHealth        = randomHealth,--randomHealth,
         saucerPosition      = randomPosition,
         saucerReloadTime    = 0,
         saucerSize          = randomSize,

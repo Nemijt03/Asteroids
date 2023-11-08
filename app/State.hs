@@ -44,7 +44,7 @@ standardState = do
     return $ State {
             enemies = [],
             projectiles = [], --Projectile (500, 360) (0,0) 30],
-            animations = [deathAnimation],
+            animations = [],
             playerState = PlayerState {
                 playerPosition = (640, 360),
                 playerFacing = normalizeV (1,0),
@@ -85,7 +85,10 @@ stepEnemiesShoot :: State -> State
 stepEnemiesShoot s@State{enemies,projectiles,playerState} = let (newE, newP) = foldr getProj ([],[]) enemies
                                                 in s{enemies = newE, projectiles = projectiles ++ newP}
     where
-        getProj e@MkSaucer{} (listE, listP) = (e{saucerReloadTime = 120}:listE,shootFromSaucer e (playerPosition playerState) : listP)
+        getProj e@MkSaucer{saucerReloadTime} (listE, listP) | saucerReloadTime < 1 =
+             (e{saucerReloadTime = 60}:listE,shootFromSaucer e (playerPosition playerState) : listP)
+                                                            | otherwise            =
+             (e:listE, listP)
         getProj e (listE, listP)             = (e:listE, listP)
 
 doCollision :: State -> State
@@ -102,12 +105,8 @@ playerDies s = s -- make bitmap go into pieves and explode it like that
 -- so if the player is moving backwards, the projectile will go less fast
 shootFromPlayer :: State -> State
 shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
-                  | otherwise = s {projectiles = Projectile {
-                                    projectilePosition = playerPosition $ playerState s, -- PMath.+ 2 PMath.* playerFacing s,
-                                    projectileSpeed = playerSpeed (playerState s) PMath.+ (50 PMath.* playerFacing (playerState s)),
-                                    projectileTimeAlive = 20
-                                    } : projectiles s,
-                                playerState = (playerState s) {playerReloadTime = 5} }
+                  | otherwise = s {projectiles = projectileFromPlayer (playerState s) : projectiles s,
+                                   playerState = (playerState s) {playerReloadTime = 5} }
 
 -- event handler of clicking while paused
 mouseClick :: State -> IO State

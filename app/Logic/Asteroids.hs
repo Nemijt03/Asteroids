@@ -37,14 +37,14 @@ stepGameState time s =
                         })
                     _ -> stepDownKeys (downKeys s) s
 
-    where stateFunctions = stepDownKeys (downKeys s) . 
-                           spawnEnemy .
-                           removeDeadObjects .
-                           stepEnemiesShoot .
-                           stepEnemies .
-                           stepProjectiles . 
-                           doCollision . 
-                           stepAnimations
+    where stateFunctions = stepDownKeys (downKeys s)  
+                           . spawnEnemy 
+                           . stepEnemiesShoot 
+                           . stepEnemies 
+                           . stepProjectiles 
+                           . doCollision 
+                           . stepAnimations 
+                           . removeDeadObjects 
 
 removeDeadObjects :: State -> State
 removeDeadObjects s = s{enemies = removeDead (enemies s),

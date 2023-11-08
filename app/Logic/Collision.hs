@@ -49,12 +49,14 @@ data Square = Sq PMath.Point Width
 class Damagable a where
     doDamage :: a -> Int -> a
     isDead :: a -> Bool
+    canDamage :: a -> Bool 
+
 class Squarable a where
     toSquare :: a -> Square
 
 intersect :: Square -> Square -> Bool
-intersect (Sq (x,y) w) (Sq (x',y') w') = x < (x' + w') && (x + w) > x
-                                    && y < (y' + w') && (y + w) > y
+intersect (Sq (x,y) w) (Sq (x',y') w') = x < (x' + w') && (x + w) > x'
+                                    && y < (y' + w') && (y + w) > y'
 inside :: Square -> Square -> Bool
 inside (Sq p w) (Sq p' w') = inBox tl && inBox tr && inBox dl && inBox dr
     where
@@ -67,7 +69,7 @@ inside (Sq p w) (Sq p' w') = inBox tl && inBox tr && inBox dl && inBox dr
 class (Squarable a, Damagable a) => Collidable a
 
 isCollision :: (Collidable a, Collidable b) => a -> b -> Bool
-isCollision a b = intersect (toSquare a) (toSquare b)
+isCollision a b = canDamage a && canDamage b && intersect (toSquare a) (toSquare b) 
 
 collide :: (Collidable a, Collidable b) => a -> b -> (a,b)
 collide a b | isCollision a b = (doDamage a 1, doDamage b 1) --can be changed if a or b have a specific damage value added later
@@ -79,14 +81,17 @@ instance Damagable Enemy where
     doDamage enemy@(MkSaucer  {saucerHealth})   damage = enemy{saucerHealth   = saucerHealth   - damage}
     isDead MkAsteroid{asteroidHealth} = asteroidHealth < 1
     isDead MkSaucer{saucerHealth}     = saucerHealth < 1
+    canDamage _ = True
 
 instance Damagable PlayerState where
     doDamage player@PlayerState{playerLives} damage = player{playerLives = playerLives - damage}
     isDead PlayerState{playerLives} = playerLives < 1
+    canDamage _ = True
 
 instance Damagable Projectile where
     doDamage projectile _ = projectile{projectileTimeAlive = 0}
-    isDead Projectile{projectileTimeAlive} = projectileTimeAlive < 1
+    isDead Projectile{projectileTimeAlive} = projectileTimeAlive <= 0
+    canDamage Projectile{projectileImmuneTime} = projectileImmuneTime <= 0
 
 --instances to convert the different objects to squares
 instance Squarable Enemy where
@@ -97,7 +102,7 @@ instance Squarable PlayerState where
     toSquare PlayerState{playerPosition} = Sq playerPosition (unsafeSearch Medium standardSize)
 
 instance Squarable Projectile where
-    toSquare Projectile{projectilePosition} = Sq projectilePosition 1 --1 pixel big
+    toSquare Projectile{projectilePosition} = Sq projectilePosition 5 --1 pixel big
 
 
 --making all objects an instance of collidable thanks to them already being Squarable and Damagable

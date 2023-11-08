@@ -11,7 +11,7 @@ main = do
     -- display (InWindow "window" (1280, 720) (0,0)) black stateToPicture
     playIO (InWindow "Asteroids" (1280, 720) (0, 0)) -- Or FullScreen
               black            -- Background color
-              10               -- Frames per second
+              30               -- Frames per second
               state            -- Initial state
               stateToPicture   -- View function
               input            -- Event function

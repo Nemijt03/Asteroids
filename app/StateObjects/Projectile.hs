@@ -10,33 +10,37 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 data Projectile = Projectile {
                 projectilePosition :: Point,
                 projectileSpeed :: Vector,
-                projectileTimeAlive :: Int
+                projectileTimeAlive :: Int,
+                projectileImmuneTime  :: Int
                 }
                 deriving (Show, Eq)
 
 
 stepProjectile :: Projectile ->  Projectile
 stepProjectile p = p {
-                        projectilePosition = wrap (mapPlus projectilePosition projectileSpeed p),
-                        projectileTimeAlive = projectileTimeAlive p - 1
-                    }
+                        projectilePosition = wrap (projectilePosition p PMath.+ projectileSpeed p),
+                        projectileTimeAlive = projectileTimeAlive p - 1,
+                        projectileImmuneTime = projectileImmuneTime p - 1
+                     }
 
 
 --maybe it spawning on top will cause it to hit the point it spawned on
 
-shootFromPlayer :: PlayerState -> Projectile
-shootFromPlayer s = Projectile {
-                                    projectilePosition = playerPosition s PMath.+ 2 PMath.* playerFacing s,
-                                    projectileSpeed = playerSpeed s PMath.+ (50 PMath.* playerFacing s),
-                                    projectileTimeAlive = 20
-                                }
+projectileFromPlayer :: PlayerState -> Projectile
+projectileFromPlayer s = Projectile {
+                                    projectilePosition = playerPosition s,
+                                    projectileSpeed = 30 PMath.* playerFacing s,
+                                    projectileTimeAlive = 20,
+                                    projectileImmuneTime = 3
+                                    }
 
 shootFromSaucer :: Enemy -> Point -> Projectile
 shootFromSaucer MkSaucer{saucerPosition = epos} ppos 
  = Projectile {
-                projectilePosition  = epos PMath.+ ( 2 PMath.* (epos PMath.- ppos)),
-                projectileSpeed     =  50 PMath.* (epos PMath.- ppos),
-                projectileTimeAlive = 20
+                projectilePosition  = epos ,
+                projectileSpeed     = mulSV 30 $ normalizeV (ppos PMath.- epos),
+                projectileTimeAlive = 30,
+                projectileImmuneTime = 3
               } 
 shootFromSaucer _ _ = undefined
 
