@@ -9,9 +9,11 @@ import Player
 import Animation
 import Enemy
 import State
+import ButtonLogic
 
 import Graphics.UI.GLUT (Size(Size))
-import Pausing
+import Graphics.UI.GLUT.Fonts
+
 
 
 stateToPicture :: State -> IO Picture
@@ -22,15 +24,18 @@ stateToPicture state =
         animationsPic <- translatedRender $ animations state
         player <- translatedRender $ playerState state
 
-        btns <- buttonsWithActions
-        let btns1 = map fst btns
-        pauseButtons <- buttonsToPicture btns1
+        pauseButtons <- pausingButtonsWithActions
+        pauseButtonsPic <- translatedRender $ map fst pauseButtons
+
+        leaderboardValues <- getLeaderBoard
+        leaderboardButtonsPic <- translatedRender $ mkLeaderboardButtons leaderboardValues
         --score <- scoreToPicture (score state)
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let gameLoopPictures = case gameLoop state of
                                 Running -> []
-                                _ -> [pauseButtons]
+                                Leaderboard -> [leaderboardButtonsPic]
+                                _ -> [pauseButtonsPic]
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,
@@ -96,10 +101,33 @@ instance Renderable Enemy where
     getPosition MkAsteroid{asteroidPosition} = asteroidPosition
     getPosition MkSaucer{saucerPosition} = saucerPosition
 
+instance Renderable Button where
+    render _ = Blank -- must define, but will not be used
+    getPosition _ = (0,0) -- must define, but will not be used
+
+    translatedRender b = do
+        case b of
+
+            (MkButton (x, y) (w, h) c s) -> do
+                width <- stringWidth Roman s
+                let offset = fromIntegral $ negate $ width `div` 4
+                
+                return $ Translate x y $ Pictures [
+                        Color c $ rectangleWire w h,
+                        Translate offset (-20) $ Scale 0.5 0.5 $ Color white $ Text s
+                    ]
+
+-- Picture button is automatically square with size 100x100
+            (MkPicButton (x, y) c pic) -> return $ Translate x y $ Pictures [
+                                        Color c $ rectangleWire 100 100,
+                                        pic
+                                    ]
+
 
 instance (Renderable a) => Renderable [a] where
   render _ = Blank -- must define, but will not be used
   getPosition _ = (0,0) -- must define, but will not be used
+
   translatedRender lst = do 
     pics <- mapM translatedRender lst
     return $ Pictures pics

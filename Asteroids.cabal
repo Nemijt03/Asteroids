@@ -79,8 +79,8 @@ executable Asteroids
         "Animation"
         "State"
         "SpawnEnemies"
-        "Pausing"
         "Renderable"
+        "ButtonLogic"
         
 
     -- LANGUAGE extensions used by modules in this package.
