@@ -7,6 +7,10 @@ import Enemy
 import Player
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import GHC.Generics
+import qualified Data.Aeson as Ae
+
+instance Ae.FromJSON Projectile
+instance Ae.ToJSON Projectile
 
 data Projectile = Projectile {
                 projectilePosition :: Point,

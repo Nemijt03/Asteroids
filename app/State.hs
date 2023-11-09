@@ -14,7 +14,15 @@ import qualified Data.Set as S
 import Pausing
 import System.Random
 import GHC.Generics
+import qualified Data.Aeson as Ae
+import Data.Text
 
+instance Ae.ToJSON Options
+instance Ae.FromJSON Options
+
+instance Ae.ToJSON Key where
+    toJSON key = toJSON (pack (show key))
+instance Ae.FromJSON Key where
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.

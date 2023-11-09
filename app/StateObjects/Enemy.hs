@@ -7,6 +7,12 @@ import Assoc
 import ScreenLogic
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import GHC.Generics
+import Data.Aeson
+
+instance ToJSON EnemySize
+instance FromJSON EnemySize
+instance FromJSON Enemy
+instance ToJSON Enemy
 
 data Enemy = MkAsteroid {
                 asteroidPosition :: Point, 

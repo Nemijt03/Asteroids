@@ -3,13 +3,23 @@ module SavingAndLoading where
 import State
 import GHC.Generics
 import Data.Aeson
+import Data.Aeson.Types
 import System.IO
 import Pausing
 import Imports
 import Control.Exception
+import System.Random
+
 
 instance ToJSON State
 instance FromJSON State
+
+
+instance Generic StdGen
+instance FromJSON StdGen
+instance ToJSON StdGen
+
+
 
 getFilePathToSave :: Int -> String
 getFilePathToSave int = "saves/save" ++ show int ++ ".json"

@@ -6,7 +6,10 @@ import Assoc
 import Imports
 import qualified Data.Set as S
 import GHC.Generics
+import qualified Data.Aeson as Ae
 
+instance Ae.ToJSON UserAction
+instance Ae.FromJSON UserAction
 
 type Inputs = Assoc Key UserAction
 
