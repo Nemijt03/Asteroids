@@ -106,6 +106,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-20))
                         Paused -> s {gameLoop = Running}
                         Saving -> s{gameLoop = Paused}
                         Loading -> s {gameLoop = Paused}
+                        Leaderboard -> s{gameLoop = Paused}
                     | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
                     | ua == TriggerOptions = s {gameLoop = OptionsMenu}
                     | otherwise = s
@@ -136,7 +137,7 @@ mouseClick s =
         getAction buttons = do
             a <- buttons      
             let mousePos = mousePosition s 
-            let    result = filter (isInside mousePos) a
+            let result = filter (isInside mousePos) a
             if null result
                 then return s
                 else snd (head result) s

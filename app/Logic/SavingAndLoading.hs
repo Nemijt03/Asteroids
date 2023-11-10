@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# language NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-module SavingAndLoading (savingButtonsWithActions, loadingButtonsWithActions) where
+module SavingAndLoading (savingButtonsWithActions, loadingButtonsWithActions, checkExists) where
 import State
 import GHC.Generics
 import qualified Data.Aeson as Ae
