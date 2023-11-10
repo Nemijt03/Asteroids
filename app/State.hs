@@ -112,8 +112,9 @@ stepAnimations :: State -> State
 stepAnimations s = s {animations = map stepAnimation (animations s)}
 
 stepEnemiesShoot :: State -> State
-stepEnemiesShoot s@State{enemies,projectiles,playerState} = let (newE, newP) = foldr getProj ([],[]) enemies
-                                                in s{enemies = newE, projectiles = projectiles ++ newP}
+stepEnemiesShoot s@State{enemies,projectiles,playerState} =
+    let (newE, newP) = foldr getProj ([],[]) enemies
+        in s{enemies = newE, projectiles = projectiles ++ newP}
     where
         getProj e@MkSaucer{saucerReloadTime} (listE, listP) | saucerReloadTime < 1 =
              (e{saucerReloadTime = 60}:listE,shootFromSaucer e (playerPosition playerState) : listP)
@@ -122,10 +123,13 @@ stepEnemiesShoot s@State{enemies,projectiles,playerState} = let (newE, newP) = f
         getProj e (listE, listP)             = (e:listE, listP)
 
 doCollision :: State -> State
-doCollision s@State{enemies, projectiles, playerState} = let (newE, newPr, newPl) = naiveCollision enemies projectiles playerState
-                                                     in s{enemies = newE, projectiles = newPr, playerState = newPl}
+doCollision s@State{enemies, projectiles, playerState} =
+    let (newE, newPr, newPl) = naiveCollision enemies projectiles playerState
+        in s{enemies = newE, projectiles = newPr, playerState = newPl}
 
-
+checkPlayerDeath :: State -> State
+checkPlayerDeath s@State{playerState} | playerLives playerState <= 0 = s{gameLoop = GameOver}
+                                      | otherwise = s
 -- will be death of player and spawn in death animation
 playerDies :: State -> State
 playerDies s = s -- make bitmap go into pieves and explode it like that

@@ -41,7 +41,8 @@ stepGameState time s =
                            . stepEnemiesShoot 
                            . stepEnemies 
                            . stepProjectiles 
-                           . doCollision 
+                           . doCollision
+                           . checkPlayerDeath
                            . stepAnimations
                            . removeDeadObjects
                            . mkExplosions
