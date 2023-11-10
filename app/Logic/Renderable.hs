@@ -19,18 +19,20 @@ import Graphics.UI.GLUT.Fonts
 stateToPicture :: State -> IO Picture
 stateToPicture state =
     do
-        enemiesPic <- translatedRender $ enemies state
-        projectilesPic <- translatedRender $ projectiles state
-        animationsPic <- translatedRender $ animations state
-        player <- translatedRender $ playerState state
+        enemiesPic <- enemies state `translatedRender` state
+        projectilesPic <- projectiles state `translatedRender`  state
+        animationsPic <- animations state `translatedRender` state
+        player <- playerState state `translatedRender` state
 
         pauseButtons <- pausingButtonsWithActions
-        pauseButtonsPic <- translatedRender $ map fst pauseButtons
+        pauseButtonsPic <- map fst pauseButtons `translatedRender` state
 
         leaderboardValues <- getLeaderBoard
-        leaderboardButtonsPic <- translatedRender $ mkLeaderboardButtons leaderboardValues
-        --score <- scoreToPicture (score state)
+        leaderboardButtonsPic <- mkLeaderboardButtons leaderboardValues `translatedRender` state
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
+
+        let scorePic = Color white $ Text $ show $ score state
+
 
         let gameLoopPictures = case gameLoop state of
                                 Running -> []
@@ -44,9 +46,9 @@ stateToPicture state =
                             enemiesPic,
                             projectilesPic,
                             animationsPic,
-                            player--,
+                            player,
                             -- gameLoopShow --,
-                            --score
+                            scorePic
                         ]
 
 
@@ -58,28 +60,39 @@ stateToPicture state =
 
 
 class Renderable a where
-    render :: a -> Picture
+    render :: a -> State -> Picture
+    render _ _ = Blank
+    renderIO :: a -> State -> IO Picture
+    renderIO _ _ = return Blank
     getPosition :: a -> (Float, Float)
-    translatedRender :: a -> IO Picture
-    translatedRender a = do
+    translatedRender :: a -> State -> IO Picture
+    translatedRender a s = do
         Size w h <- get windowSize
+        picIO <- renderIO a s
         let (cx, cy) = (w `div` 2, h `div` 2)
             pos = second (fromIntegral h -) $ getPosition a
             (dx, dy) = pos PMath.- (fromIntegral cx, fromIntegral cy)
+            pic = case picIO of
+                Blank -> render a s
+                _ -> picIO
 
-        return $ Translate dx dy $ render a
+        return $ Translate dx dy pic
 
 
 
 
 instance Renderable Projectile where
-    render _ = Color white $ Text "."
+    render projectile s =
+        Rotate rotation $ Rotate (-90) pic
+            where 
+                rotation = radToDeg $ argV $ normalizeV $ projectileSpeed projectile
+                pic = playerBullet $ loadedPictures s
 
     getPosition = projectilePosition
 
 
 instance Renderable PlayerState where
-    render player = Rotate rotation bmp
+    render player _ = Rotate rotation bmp
         where
             bmp = Rotate 90 $ Bitmap $ playerBitmapData player
             rotation = radToDeg (argV (playerFacing player))
@@ -87,31 +100,31 @@ instance Renderable PlayerState where
     getPosition = playerPosition
 
 instance Renderable Animation where
-    render animation = pictureFrames animation !! onFrame animation
+    render animation _ = pictureFrames animation !! onFrame animation
 
     getPosition = animationPosition
 
 instance Renderable Enemy where
-    render e = case e of 
-            MkAsteroid{asteroidSize} -> Color yellow $ Circle (enemySize asteroidSize)
-            MkSaucer{saucerSize} -> Color red $ Circle (enemySize saucerSize)
+    render e _ = case e of
+            MkAsteroid{asteroidSize, asteroidSpeed} -> Color yellow $ Circle (enemySize asteroidSize)
+            MkSaucer{saucerSize, saucerSpeed} -> Color red $ Circle (enemySize saucerSize)
         where
             enemySize size = unsafeSearch size standardSize
+            rotation speed = radToDeg $ argV speed
 
     getPosition MkAsteroid{asteroidPosition} = asteroidPosition
     getPosition MkSaucer{saucerPosition} = saucerPosition
 
 instance Renderable Button where
-    render _ = Blank -- must define, but will not be used
     getPosition _ = (0,0) -- must define, but will not be used
 
-    translatedRender b = do
+    translatedRender b _ = do
         case b of
 
             (MkButton (x, y) (w, h) c s) -> do
                 width <- stringWidth Roman s
                 let offset = fromIntegral $ negate $ width `div` 4
-                
+
                 return $ Translate x y $ Pictures [
                         Color c $ rectangleWire w h,
                         Translate offset (-20) $ Scale 0.5 0.5 $ Color white $ Text s
@@ -125,9 +138,8 @@ instance Renderable Button where
 
 
 instance (Renderable a) => Renderable [a] where
-  render _ = Blank -- must define, but will not be used
   getPosition _ = (0,0) -- must define, but will not be used
 
-  translatedRender lst = do 
-    pics <- mapM translatedRender lst
+  translatedRender lst s = do
+    pics <- mapM (`translatedRender` s) lst
     return $ Pictures pics
