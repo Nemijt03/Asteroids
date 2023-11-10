@@ -10,7 +10,8 @@ data Projectile = Projectile {
                 projectilePosition :: Point,
                 projectileSpeed :: Vector,
                 projectileTimeAlive :: Int,
-                projectileImmuneTime  :: Int
+                projectileImmuneTime  :: Int,
+                isFromPlayer :: Bool
                 }
                 deriving (Show, Eq)
 
@@ -30,7 +31,8 @@ projectileFromPlayer s = Projectile {
                                     projectilePosition = playerPosition s,
                                     projectileSpeed = 20 PMath.* playerFacing s,
                                     projectileTimeAlive = 30,
-                                    projectileImmuneTime = 3
+                                    projectileImmuneTime = 3,
+                                    isFromPlayer = True
                                     }
 
 shootFromSaucer :: Enemy -> Point -> Projectile
@@ -39,6 +41,7 @@ shootFromSaucer MkSaucer{saucerPosition = epos} ppos
                 projectilePosition  = epos ,
                 projectileSpeed     = mulSV 10 $ normalizeV (ppos PMath.- epos),
                 projectileTimeAlive = 30,
-                projectileImmuneTime = 3
+                projectileImmuneTime = 3,
+                isFromPlayer = False
               } 
 shootFromSaucer _ _ = undefined
