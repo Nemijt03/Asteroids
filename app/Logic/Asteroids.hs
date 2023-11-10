@@ -22,10 +22,8 @@ import ButtonLogic
 step :: Float -> State -> IO State
 step time state = do
     case gameLoop state of
-        GameQuitted -> exitSuccess
-        _ -> do 
-            newA <- mapM (mkExplosion . getPosition) (filter isDead (enemies state))
-            return $ stepGameState time state{animations = animations state ++ newA}
+        GameQuit -> exitSuccess
+        _ -> return $ stepGameState time state
 
 -- pure step function.
 stepGameState :: Float -> State -> State
@@ -44,8 +42,15 @@ stepGameState time s =
                            . stepEnemies 
                            . stepProjectiles 
                            . doCollision 
-                           . stepAnimations 
-                           . removeDeadObjects 
+                           . stepAnimations
+                           . removeDeadObjects
+                           . mkExplosions
+
+mkExplosions :: State -> State
+mkExplosions s = s {animations = animations s ++ newA}
+    where 
+        newA = map (makeEx . getPosition) (filter isDead (enemies s))
+        makeEx = mkExplosion (explosion (loadedPictures s))
 
 removeDeadObjects :: State -> State
 removeDeadObjects s = s{enemies = removeDead (enemies s),
@@ -98,15 +103,15 @@ inputKey _ s = s
 
 -- turn a Useraction into a change in the state
 handleAction :: UserAction -> State -> State
-handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-20))
-                    | ua == TurnRight = rotatePlayer (degToRad 20)
-                    | ua == Forward = accelerate 3
-                    | ua == Backward = accelerate (-3)
+handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-10))
+                    | ua == TurnRight = rotatePlayer (degToRad 10)
+                    | ua == Forward = accelerate 0.7
+                    | ua == Backward = accelerate (-0.7)
                     | ua == Shoot = shootFromPlayer s
                     | ua == Pause = case gameLoop s of
                         Paused -> s {gameLoop = Running}
                         _ -> s {gameLoop = Paused}
-                    | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
+                    | ua == TriggerQuitGame = s {gameLoop = GameQuit}
                     | ua == TriggerOptions = s {gameLoop = OptionsMenu}
                     | otherwise = s
                     where

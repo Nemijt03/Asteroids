@@ -44,7 +44,7 @@ enemyChance time = min 0.7 (fromInteger(floor (time / 600)) * 0.04)
 makeRandomAsteroid :: StdGen -> (Enemy, StdGen)
 makeRandomAsteroid g =
     let
-        (randomSpeed, g')       = getRandomSpeed 10 g
+        (randomSpeed, g')       = getRandomSpeed 7 g
         (randomPosition, g'')   = getRandomPoint randomSpeed g'
         (randomHealth,g''')     = randomR (1,4) g''
         (randomSize,lastG)      = getRandomSize g'''
@@ -61,7 +61,7 @@ makeRandomAsteroid g =
 makeRandomSaucer :: StdGen -> (Enemy,StdGen)
 makeRandomSaucer g =
     let
-        (randomSpeed, g')       = getRandomSpeed 10 g
+        (randomSpeed, g')       = getRandomSpeed 7 g
         (randomPosition, g'')   = getRandomPoint randomSpeed g'
         (randomHealth,g''')     = randomR (2,7) g'' :: (Int, StdGen)
         (randomSize,lastG)      = getRandomSize g'''

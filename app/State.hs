@@ -24,7 +24,8 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         mousePosition :: (Float, Float),
                         options :: Options,
                         randomG :: StdGen,
-                        inputs :: Inputs
+                        inputs :: Inputs,
+                        loadedPictures :: LoadedPictures
             }
             deriving (Show, Eq)
 
@@ -34,10 +35,36 @@ data Options = MkOptions {
                     }
                         deriving (Show, Eq)
 
+data LoadedPictures = MkPictures {
+                                    playerBullet :: Picture,
+                                    saucerBullet :: Picture,
+                                    explosion :: [Picture]
+
+                                } 
+                                deriving (Show, Eq)
+
+standardPictures :: IO LoadedPictures
+standardPictures = do
+    e1 <- loadBMP "images/explosion/1.bmp"
+    e2 <- loadBMP "images/explosion/2.bmp"
+    e3 <- loadBMP "images/explosion/3.bmp"
+    e4 <- loadBMP "images/explosion/4.bmp"
+    e5 <- loadBMP "images/explosion/5.bmp"
+    e6 <- loadBMP "images/explosion/6.bmp"
+
+    pBullet <- loadBMP "images/fire.bmp"
+    eBullet <- loadBMP "images/fire.bmp"
+
+    return $ MkPictures {
+        playerBullet = pBullet,
+        saucerBullet = eBullet,
+        explosion = [e1, e2, e3, e4, e5, e6]
+        }
+
 standardState :: IO State
 standardState = do
     Right playerBMP <- readBMP "images\\ship32.bmp"
-    _ <- mkExplosion (600, 360)
+    standardPics <- standardPictures
     let playerBMPData = bitmapDataOfBMP playerBMP
     return $ State {
             enemies = [],
@@ -59,7 +86,8 @@ standardState = do
             downKeys = S.empty,
             mousePosition = (0, 0),
             options = standardOptions,
-            randomG = getPredictableRandom
+            randomG = getPredictableRandom,
+            loadedPictures = standardPics
 }
 
 getPredictableRandom :: StdGen 
@@ -110,5 +138,5 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
                   | otherwise = s {projectiles = projectileFromPlayer (playerState s) : projectiles s,
                                    playerState = (playerState s) {playerReloadTime = 5} }
 
-data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard
+data GameLoop = Running | Paused | GameOver | GameQuit | OptionsMenu | Leaderboard
                 deriving (Show, Eq, Enum)
