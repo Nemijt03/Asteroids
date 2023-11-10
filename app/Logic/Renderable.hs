@@ -23,20 +23,17 @@ stateToPicture state =
         animationsPic <- translatedRender $ animations state
         player <- translatedRender $ playerState state
 
-        btns <- buttonsWithActions
-        let btns1 = map fst btns
-        pauseButtons <- buttonsToPicture btns1
-
-        sbtns <- savingButtonsWithActions
-        let sbtns1 = map fst sbtns
-        saveButtons <- buttonsToPicture sbtns1
         --score <- scoreToPicture (score state)
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
+        pausedButtons <- getButtons buttonsWithActions
+        saveButtons <- getButtons savingButtonsWithActions
+        loadButtons <- getButtons loadingButtonsWithActions
         let gameLoopPictures = case gameLoop state of
-                                Running -> []
-                                Paused -> [pauseButtons]
-                                Saving -> [saveButtons]
+                                Paused ->  [pausedButtons]
+                                Saving ->  [saveButtons]
+                                Loading -> [loadButtons]
+                                _ -> []
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,
@@ -55,7 +52,12 @@ stateToPicture state =
             statePictures ++
             gameLoopPictures ++
             testPictures)
-
+    where
+        getButtons buttons = do
+            btns <- buttons
+            let btns1 = map fst btns
+            retButtons <- buttonsToPicture btns1
+            return retButtons
 
 
 class Renderable a where

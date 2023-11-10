@@ -129,18 +129,14 @@ handleMouseMove s = s {
 mouseClick :: State -> IO State
 mouseClick s = 
     case (gameLoop s) of
-        Saving -> do
-            a <- savingButtonsWithActions
-            getAction a
-        Paused -> 
-            do
-                a <- buttonsWithActions
-                getAction a
+        Saving ->  getAction savingButtonsWithActions      
+        Paused ->  getAction buttonsWithActions
+        Loading -> getAction loadingButtonsWithActions
     where
-        getAction buttons =         
+        getAction buttons = do
+            a <- buttons      
             let mousePos = mousePosition s 
-                result = filter (isInside mousePos) buttons
-            in 
-                if null result
-                    then return s
-                    else snd (head result) s
+            let    result = filter (isInside mousePos) a
+            if null result
+                then return s
+                else snd (head result) s

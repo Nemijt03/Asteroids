@@ -138,15 +138,6 @@ buttonsWithActions = do
                         \s -> return $ s {gameLoop = Leaderboard}
                     ]
 
-
-
-
-saveGame :: State -> IO State
-saveGame = undefined
-
-loadGame :: State -> IO State
-loadGame = undefined
-
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | Saving | Loading
                 deriving (Show, Eq, Enum, Generic)
 

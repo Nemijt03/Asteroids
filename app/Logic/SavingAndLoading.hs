@@ -1,7 +1,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# language NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-module SavingAndLoading (savingButtonsWithActions) where
+module SavingAndLoading (savingButtonsWithActions, loadingButtonsWithActions) where
 import State
 import GHC.Generics
 import qualified Data.Aeson as Ae
@@ -126,6 +126,24 @@ savingButtonsWithActions = do
         actionPutSave int = \s -> do
             putStateToFile int s{gameLoop = Paused}
             return s{gameLoop = Paused}
+
+
+loadingButtonsWithActions :: IO [(Button, State -> IO State)]
+loadingButtonsWithActions = do
+     fileResults <- mapM (\int -> checkExists (getFilePathToSave int)) [1 .. 5] --seeing what files already exists
+     let availabilityStrings = zipWith getSlotAvailability [1 .. 5] fileResults
+     return $ zip (zipWith createLoadButton [1 .. 5] availabilityStrings) --buttons themselves
+                  (zipWith actionGetSave    [1 .. 5] fileResults) --actions with the buttons
+     where 
+        createLoadButton int string = MkButton (0,250 - 100 * int) (600,80) (greyN 0.4) string 
+        getSlotAvailability int False = "<Save to this slot first>" 
+        getSlotAvailability int True  = "save " ++ show int
+        actionGetSave int False = \s -> return s
+        actionGetSave int True = \s -> do
+            newS <- getStateFromFile int
+            case newS of
+                Nothing       -> return s 
+                Just newState -> return newState
 
 checkExists :: FilePath -> IO Bool
 checkExists filePath = catch (do 
