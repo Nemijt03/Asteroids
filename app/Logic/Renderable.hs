@@ -29,6 +29,9 @@ stateToPicture state =
 
         leaderboardValues <- getLeaderBoard
         leaderboardButtonsPic <- mkLeaderboardButtons leaderboardValues `translatedRender` state
+
+        gameOverButtons <- gameOverButtonsWithActions
+        gameOverButtonsPic <- map fst gameOverButtons `translatedRender` state
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let scorePic = Color white $ Text $ show $ score state
@@ -37,6 +40,7 @@ stateToPicture state =
         let gameLoopPictures = case gameLoop state of
                                 Running -> []
                                 Leaderboard -> [leaderboardButtonsPic]
+                                GameOver -> [gameOverButtonsPic]
                                 _ -> [pauseButtonsPic]
         let testPictures = [
                             --Test:
@@ -105,10 +109,13 @@ instance Renderable Animation where
     getPosition = animationPosition
 
 instance Renderable Enemy where
-    render e _ = case e of
-            MkAsteroid{asteroidSize, asteroidSpeed} -> Color yellow $ Circle (enemySize asteroidSize)
-            MkSaucer{saucerSize, saucerSpeed} -> Color red $ Circle (enemySize saucerSize)
+    render e s = case e of
+            MkAsteroid{asteroidSize, asteroidSpeed} -> Rotate (rotation asteroidSpeed) $ Scale (scalingFactor asteroidSize) (scalingFactor asteroidSize) picAsteroid
+            MkSaucer{saucerSize, saucerSpeed} -> Rotate (rotation saucerSpeed) $ Scale (scalingFactor saucerSize) (scalingFactor saucerSize) picSaucer
         where
+            picSaucer = saucerPicture $ loadedPictures s
+            picAsteroid = asteroidPicture $ loadedPictures s
+            scalingFactor size = enemySize size / 30
             enemySize size = unsafeSearch size standardSize
             rotation speed = radToDeg $ argV speed
 
