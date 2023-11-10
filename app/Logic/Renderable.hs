@@ -29,6 +29,9 @@ stateToPicture state =
 
         leaderboardValues <- getLeaderBoard
         leaderboardButtonsPic <- mkLeaderboardButtons leaderboardValues `translatedRender` state
+
+        gameOverButtons <- gameOverButtonsWithActions
+        gameOverButtonsPic <- map fst gameOverButtons `translatedRender` state
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let scorePic = Color white $ Text $ show $ score state
@@ -37,6 +40,7 @@ stateToPicture state =
         let gameLoopPictures = case gameLoop state of
                                 Running -> []
                                 Leaderboard -> [leaderboardButtonsPic]
+                                GameOver -> [gameOverButtonsPic]
                                 _ -> [pauseButtonsPic]
         let testPictures = [
                             --Test:

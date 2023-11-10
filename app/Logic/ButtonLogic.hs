@@ -2,6 +2,7 @@
 module ButtonLogic where
 
 import State
+import Player
 
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
@@ -11,6 +12,7 @@ mouseClick :: State -> IO State
 mouseClick s = do
     a <- case gameLoop s of
         Leaderboard -> mkButtonsNoActions $ mkLeaderboardButtons [("sef", 53),("fea",52),("as",10),("je",2)]
+        GameOver -> gameOverButtonsWithActions
         _ -> pausingButtonsWithActions
 
     let mousePos = mousePosition s
@@ -22,8 +24,9 @@ mouseClick s = do
 allButtonsWithActions :: IO [(Button, State -> IO State)]
 allButtonsWithActions = do
     pausingButtons <- pausingButtonsWithActions
+    gameOverButtons <- gameOverButtonsWithActions
     leaderboardButtons <- mkButtonsNoActions $ mkLeaderboardButtons [("sef", 53),("fea",52),("as",10),("je",2)]
-    return $ pausingButtons ++ leaderboardButtons
+    return $ pausingButtons ++ leaderboardButtons ++ gameOverButtons
 
 -- pausing buttons with their actions for mouseClick
 pausingButtonsWithActions :: IO [(Button, State -> IO State)]
@@ -45,6 +48,21 @@ pausingButtonsWithActions = do
                         saveGame,
                         loadGame,
                         \s -> return $ s {gameLoop = Leaderboard}
+                    ]
+
+gameOverButtonsWithActions :: IO [(Button, State -> IO State)]
+gameOverButtonsWithActions = do
+    return $ zip    [ -- Buttons
+                        MkButton (0, 250) (600, 100) (greyN 0.4) "Restart",
+                        MkButton (0, 100) (600, 100) (greyN 0.4) "Your Score was:",
+                        MkButton (0, -50) (600, 100) (greyN 0.4) "SCORREEEEEEEE",
+                        MkButton (0, -200) (600, 100) (greyN 0.4) "Quit Game (0)"
+                    ]
+                    [ -- Actions
+                        \s -> return $ s {gameLoop = Running, playerState = (playerState s) {playerLives = 3}},
+                        return,
+                        return,
+                        \s -> return $ s {gameLoop = GameQuit}
                     ]
 
 mkLeaderboardButtons :: [(String, Int)] -> [Button]
