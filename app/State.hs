@@ -39,7 +39,8 @@ data LoadedPictures = MkPictures {
                                     playerBullet :: Picture,
                                     saucerBullet :: Picture,
                                     explosion :: [Picture],
-                                    saucerPicture :: Picture
+                                    saucerPicture :: Picture,
+                                    asteroidPicture :: Picture
 
                                 } 
                                 deriving (Show, Eq)
@@ -56,12 +57,14 @@ standardPictures = do
     pBullet <- loadBMP "images/fire.bmp"
     eBullet <- loadBMP "images/fire.bmp"
     sPic <- loadBMP "images/ship2.bmp"
+    aPic <- loadBMP "images/asteroid.bmp"
 
     return $ MkPictures {
         playerBullet = pBullet,
         saucerBullet = eBullet,
         explosion = [e1, e2, e3, e4, e5, e6],
-        saucerPicture = sPic
+        saucerPicture = sPic,
+        asteroidPicture = aPic
         }
 
 standardState :: IO State

@@ -106,10 +106,11 @@ instance Renderable Animation where
 
 instance Renderable Enemy where
     render e s = case e of
-            MkAsteroid{asteroidSize, asteroidSpeed} -> Color yellow $ Circle (enemySize asteroidSize)
-            MkSaucer{saucerSize, saucerSpeed} -> Rotate (rotation saucerSpeed) $ Scale (scalingFactor saucerSize) (scalingFactor saucerSize) pic
+            MkAsteroid{asteroidSize, asteroidSpeed} -> Rotate (rotation asteroidSpeed) $ Scale (scalingFactor asteroidSize) (scalingFactor asteroidSize) picAsteroid
+            MkSaucer{saucerSize, saucerSpeed} -> Rotate (rotation saucerSpeed) $ Scale (scalingFactor saucerSize) (scalingFactor saucerSize) picSaucer
         where
-            pic = saucerPicture $ loadedPictures s
+            picSaucer = saucerPicture $ loadedPictures s
+            picAsteroid = asteroidPicture $ loadedPictures s
             scalingFactor size = enemySize size / 30
             enemySize size = unsafeSearch size standardSize
             rotation speed = radToDeg $ argV speed
