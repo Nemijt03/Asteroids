@@ -9,9 +9,10 @@ import Player
 import Animation
 import Enemy
 import State
-
+import SavingAndLoading
 import Graphics.UI.GLUT (Size(Size))
 import Pausing
+import SavingAndLoading
 
 
 stateToPicture :: State -> IO Picture
@@ -25,12 +26,17 @@ stateToPicture state =
         btns <- buttonsWithActions
         let btns1 = map fst btns
         pauseButtons <- buttonsToPicture btns1
+
+        sbtns <- savingButtonsWithActions
+        let sbtns1 = map fst sbtns
+        saveButtons <- buttonsToPicture sbtns1
         --score <- scoreToPicture (score state)
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let gameLoopPictures = case gameLoop state of
                                 Running -> []
-                                _ -> [pauseButtons]
+                                Paused -> [pauseButtons]
+                                Saving -> [saveButtons]
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,

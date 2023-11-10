@@ -15,14 +15,9 @@ import Pausing
 import System.Random
 import GHC.Generics
 import qualified Data.Aeson as Ae
-import Data.Text
 
 instance Ae.ToJSON Options
 instance Ae.FromJSON Options
-
-instance Ae.ToJSON Key where
-    toJSON key = toJSON (pack (show key))
-instance Ae.FromJSON Key where
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
@@ -39,7 +34,7 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         randomG :: StdGen,
                         inputs :: Inputs
             }
-            deriving (Generic, Show, Eq)
+            deriving (Show, Eq)
 
 data Options = MkOptions {
                         mouseInput :: Bool,
@@ -119,15 +114,7 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
                   | otherwise = s {projectiles = projectileFromPlayer (playerState s) : projectiles s,
                                    playerState = (playerState s) {playerReloadTime = 5} }
 
--- event handler of clicking while paused
-mouseClick :: State -> IO State
-mouseClick s = do
-    a <- buttonsWithActions
-    let mousePos = mousePosition s
-        jeiaj = filter (isInside mousePos) a
-    if null jeiaj
-        then return s
-        else snd (head jeiaj) s
+
 
 -- pausing buttons with their actions for mouseClick
 buttonsWithActions :: IO [(Button, State -> IO State)]
@@ -161,4 +148,7 @@ loadGame :: State -> IO State
 loadGame = undefined
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | Saving | Loading
-                deriving (Show, Eq, Enum)
+                deriving (Show, Eq, Enum, Generic)
+
+instance Ae.FromJSON GameLoop
+instance Ae.ToJSON GameLoop

@@ -4,6 +4,7 @@ module Asteroids where
 
 import Imports
 import Player
+import Pausing
 import HandleInputs
 import State
 import Assoc
@@ -14,6 +15,7 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 import Animation 
 import SpawnEnemies
 import Renderable
+import SavingAndLoading
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
@@ -122,3 +124,23 @@ handleMouseMove s = s {
                     facing = normalizeV vec
                     vec = ((x, 360 - y) PMath.+ (640, 0)) PMath.- playerPosition (playerState s)
                     (x, y) = mousePosition s
+
+-- event handler of clicking while paused
+mouseClick :: State -> IO State
+mouseClick s = 
+    case (gameLoop s) of
+        Saving -> do
+            a <- savingButtonsWithActions
+            getAction a
+        Paused -> 
+            do
+                a <- buttonsWithActions
+                getAction a
+    where
+        getAction buttons =         
+            let mousePos = mousePosition s 
+                result = filter (isInside mousePos) buttons
+            in 
+                if null result
+                    then return s
+                    else snd (head result) s
