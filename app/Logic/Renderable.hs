@@ -29,7 +29,7 @@ stateToPicture state =
         leaderboardValues <- getLeaderBoard
         leaderboardButtonsPic <- mkLeaderboardButtons leaderboardValues `translatedRender` state
 
-        gameOverButtons <- gameOverButtonsWithActions
+        gameOverButtons <- gameOverButtonsWithActions (score state)
         gameOverButtonsPic <- map fst gameOverButtons `translatedRender` state
 
         saveButtons <- savingButtonsWithActions

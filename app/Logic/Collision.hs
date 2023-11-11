@@ -1,7 +1,7 @@
 {-# language NamedFieldPuns #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use infix" #-}
-module Collision (naiveCollision,removeDead,isDead) where
+module Collision (naiveCollision,removeDead,isDead, isCollision, collide) where
 
 import Assoc
 import Player
@@ -79,13 +79,13 @@ collide a b | isCollision a b = (doDamage a 1, doDamage b 1) --can be changed if
 instance Damagable Enemy where
     doDamage enemy@(MkAsteroid{asteroidHealth}) damage = enemy{asteroidHealth = asteroidHealth - damage}
     doDamage enemy@(MkSaucer  {saucerHealth})   damage = enemy{saucerHealth   = saucerHealth   - damage}
-    isDead MkAsteroid{asteroidHealth} = asteroidHealth < 1
-    isDead MkSaucer{saucerHealth}     = saucerHealth < 1
+    isDead MkAsteroid{asteroidHealth} = asteroidHealth <= 0
+    isDead MkSaucer{saucerHealth}     = saucerHealth <= 0
     canDamage _ = True
 
 instance Damagable PlayerState where
     doDamage player@PlayerState{playerLives} damage = player{playerLives = playerLives - damage}
-    isDead PlayerState{playerLives} = playerLives < 1
+    isDead PlayerState{playerLives} = playerLives <= 0
     canDamage _ = True
 
 instance Damagable Projectile where

@@ -7,6 +7,8 @@ import Player
 import HandleInputs
 import State
 import Assoc
+import Enemy
+import Projectile
 import System.Exit
 import Collision
 import qualified Data.Set as S
@@ -32,7 +34,8 @@ stepGameState time s =
     case gameLoop s of
                     Running -> stateFunctions (s {
                             playerState = stepPlayerState (playerState s) time,
-                            timePlayed = timePlayed s + 1
+                            timePlayed = timePlayed s + 1,
+                            score = stepUpdateScore s
                         })
                     _ -> stepDownKeys (downKeys s) s
 
@@ -58,7 +61,25 @@ removeDeadObjects s = s{enemies = removeDead (enemies s),
                         projectiles = removeDead (projectiles s),
                         animations = removeAnimations (animations s) } 
 
+stepUpdateScore :: State -> Int
+stepUpdateScore State{projectiles = pr, enemies = en, score = sc} = 
+    let playerPr = filter (\p -> (isFromPlayer p)) pr 
+        in calculateScore playerPr en sc
 
+calculateScore :: [Projectile] -> [Enemy] -> Int -> Int
+calculateScore projectiles enemies score = score + foldr (getScoreProjectile) 0 projectiles
+    where
+        getScoreProjectile :: Projectile -> Int -> Int
+        getScoreProjectile pr sc = foldr (seeIfHitEnemy pr) sc enemies
+
+        --100 for the hit alone, 1000 for destruction asteroid, 2500 for destruction saucer
+        seeIfHitEnemy :: Projectile -> Enemy -> Int -> Int
+        seeIfHitEnemy pr en sc | isCollision pr en = 100 + if isDead(snd $ collide pr en) 
+                                                            then case en of
+                                                                MkAsteroid{} -> 1000
+                                                                MkSaucer{}   -> 2500
+                                                            else 0                                                           
+                               | otherwise         = sc
 
 -- step through the set of keys which are being pressed at the time
 stepDownKeys :: S.Set Key -> State -> State
@@ -88,7 +109,8 @@ input e s = do
             _ -> rtrn
         else rtrn
 
--- if a key is down, add to downKeys, but only when in the list of Useractions
+-- if a key is down, add to downKeys, but only when in the list of Useractions.
+--pause is special, as it should only work on the frame it is pressed
 inputKey :: Event -> State -> State
 inputKey (EventKey key Down _ _) s = case searched of
                                         Nothing       -> s
