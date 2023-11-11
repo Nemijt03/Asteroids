@@ -1,4 +1,5 @@
 {-# language NamedFieldPuns #-}
+{-# LANGUAGE DeriveGeneric #-}
 module State where
 
 import Player
@@ -10,6 +11,11 @@ import Enemy ( Enemy(MkSaucer, saucerReloadTime), moveEnemy )
 import HandleInputs
 import qualified Data.Set as S
 import System.Random
+import GHC.Generics
+import qualified Data.Aeson as Ae
+
+instance Ae.ToJSON Options
+instance Ae.FromJSON Options
 
 data State = State {    -- All positions of the State will be defined in a 16:9 field, 
                         -- maybe 720p (1280x720) to create easy conversion on HD screens.
@@ -33,7 +39,29 @@ data Options = MkOptions {
                         mouseInput :: Bool,
                         ietsAnders :: Bool
                     }
-                        deriving (Show, Eq)
+                        deriving (Generic, Show, Eq)
+
+standardPictures :: IO LoadedPictures
+standardPictures = do
+    e1 <- loadBMP "images/explosion/1.bmp"
+    e2 <- loadBMP "images/explosion/2.bmp"
+    e3 <- loadBMP "images/explosion/3.bmp"
+    e4 <- loadBMP "images/explosion/4.bmp"
+    e5 <- loadBMP "images/explosion/5.bmp"
+    e6 <- loadBMP "images/explosion/6.bmp"
+
+    pBullet <- loadBMP "images/fire.bmp"
+    eBullet <- loadBMP "images/fire.bmp"
+    sPic <- loadBMP "images/ship2.bmp"
+    aPic <- loadBMP "images/asteroid.bmp"
+
+    return $ MkPictures {
+        playerBullet = pBullet,
+        saucerBullet = eBullet,
+        explosion = [e1, e2, e3, e4, e5, e6],
+        saucerPicture = sPic,
+        asteroidPicture = aPic
+        }
 
 data LoadedPictures = MkPictures {
                                     playerBullet :: Picture,
@@ -148,5 +176,32 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
                   | otherwise = s {projectiles = projectileFromPlayer (playerState s) : projectiles s,
                                    playerState = (playerState s) {playerReloadTime = 5} }
 
-data GameLoop = Running | Paused | GameOver | GameQuit | OptionsMenu | Leaderboard
-                deriving (Show, Eq, Enum)
+
+
+-- pausing buttons with their actions for mouseClick
+buttonsWithActions :: IO [(Button, State -> IO State)]
+buttonsWithActions = do
+    settingsPic <- loadBMP "images\\settings.bmp"
+    leaderboardPic <- loadBMP "images\\leaderboard.bmp"
+    return $ zip    [ -- Buttons
+                        MkPicButton (450, 300) (greyN 0.4) settingsPic,
+                        MkButton (0, 250) (600, 100) (greyN 0.4) "Continue (esc)",
+                        MkButton (0, -50) (600, 100) (greyN 0.4) "Quit Game (0)",
+                        MkButton (-162, 100) (275, 100) (greyN 0.4) "Save (s)",
+                        MkButton (162, 100) (275, 100) (greyN 0.4) "Load (l)",
+                        MkPicButton (450, 150) (greyN 0.4) $ Scale 2 2 leaderboardPic
+                    ]
+                    [ -- Actions
+                        \s -> return $ s {gameLoop = OptionsMenu},
+                        \s -> return $ s {gameLoop = Running},
+                        \s -> return $ s {gameLoop = GameQuitted},
+                        \s -> return $ s {gameLoop = Saving},
+                        \s -> return $ s {gameLoop = Loading},
+                        \s -> return $ s {gameLoop = Leaderboard}
+                    ]
+
+data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | Saving | Loading
+                deriving (Show, Eq, Enum, Generic)
+
+instance Ae.FromJSON GameLoop
+instance Ae.ToJSON GameLoop

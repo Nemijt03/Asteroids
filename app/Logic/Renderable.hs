@@ -10,10 +10,9 @@ import Animation
 import Enemy
 import State
 import ButtonLogic
-
+import SavingAndLoading
 import Graphics.UI.GLUT (Size(Size))
 import Graphics.UI.GLUT.Fonts
-
 
 
 stateToPicture :: State -> IO Picture
@@ -36,12 +35,19 @@ stateToPicture state =
 
         let scorePic = Color white $ Text $ show $ score state
 
+        pausedButtons <- getButtons buttonsWithActions
+        saveButtons <- getButtons savingButtonsWithActions
+        loadButtons <- getButtons loadingButtonsWithActions
+        leadScores <- getLeaderBoard
 
         let gameLoopPictures = case gameLoop state of
-                                Running -> []
-                                Leaderboard -> [leaderboardButtonsPic]
+                                Paused ->  [pausedButtons]
+                                Saving ->  [saveButtons]
+                                Loading -> [loadButtons]
+                               -- Leaderboard -> [leadScores]
+                             --   Leaderboard -> [leaderboardButtonsPic]
                                 GameOver -> [gameOverButtonsPic]
-                                _ -> [pauseButtonsPic]
+                                _ -> [Pic]
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,
@@ -60,6 +66,27 @@ stateToPicture state =
             statePictures ++
             gameLoopPictures ++
             testPictures)
+    where
+        getButtons buttons = do
+            btns <- buttons
+            let btns1 = map fst btns
+            retButtons <- buttonsToPicture btns1
+            return retButtons
+
+getLeaderBoard :: IO Picture
+getLeaderBoard = do
+    exists <- mapM (\i -> checkExists $ "/topScores/score" ++ show i) [1 .. 5]
+    texts <- mapM (uncurry getLeaderScores) $ zip exists [1 .. 5]
+    let scores = zipWith mkScores [1 .. 5] texts 
+    buttonsToPicture scores
+        where
+            getLeaderScores False int = return $ "score " ++ show int ++ " missing"
+            getLeaderScores True int = do
+                score <- readFile $ "/topScores/score" ++ show int
+                return $ show int ++ ": " ++ score
+            mkScores int text = MkButton (0,250 - 90 * int) (600,80) (greyN 0.4) text
+
+
 
 
 

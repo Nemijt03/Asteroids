@@ -1,11 +1,18 @@
 {-# language NamedFieldPuns #-}
+{-# LANGUAGE DeriveGeneric #-}
 module Enemy where
 
 import Imports
 import Assoc
 import ScreenLogic
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import GHC.Generics
+import Data.Aeson
 
+instance ToJSON EnemySize
+instance FromJSON EnemySize
+instance FromJSON Enemy
+instance ToJSON Enemy
 
 data Enemy = MkAsteroid {
                 asteroidPosition :: Point, 
@@ -22,14 +29,14 @@ data Enemy = MkAsteroid {
                 saucerHealth :: Int,
                 saucerReloadTime :: Float
             }
-                deriving (Show, Eq)
+                deriving (Show, Eq, Generic)
 
 getEnemySize :: Enemy -> EnemySize
 getEnemySize MkAsteroid{asteroidSize} = asteroidSize
 getEnemySize MkSaucer{saucerSize} = saucerSize
 
 data EnemySize = Small | Medium | Large | ExtraLarge
-                deriving (Show, Eq, Ord)
+                deriving (Show, Eq, Ord, Generic)
 
 
 moveEnemy :: Enemy -> Point -> Enemy --requires the playerPositon to be able to change acceleration

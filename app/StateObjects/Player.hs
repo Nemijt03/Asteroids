@@ -4,6 +4,8 @@ import ScreenLogic
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
+
+
 data PlayerState = PlayerState {
                 playerPosition :: Point,
                 playerFacing :: Vector, -- Normalised vector
