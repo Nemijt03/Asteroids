@@ -4,7 +4,6 @@ module Asteroids where
 
 import Imports
 import Player
-import Pausing
 import HandleInputs
 import State
 import Assoc
@@ -24,7 +23,7 @@ import SavingAndLoading
 step :: Float -> State -> IO State
 step time state = do
     case gameLoop state of
-        GameQuit -> exitSuccess
+        GameQuitted -> exitSuccess
         _ -> return $ stepGameState time state
 
 -- pure step function.
@@ -34,11 +33,10 @@ stepGameState time s =
                     Running -> stateFunctions (s {
                             playerState = stepPlayerState (playerState s) time,
                             timePlayed = timePlayed s + 1
-                            -- stepGameLoop
                         })
                     _ -> stepDownKeys (downKeys s) s
 
-    where stateFunctions = stepDownKeys (downKeys s)  
+    where stateFunctions = stepDownKeys (downKeys s)
                            . spawnEnemy 
                            . stepEnemiesShoot 
                            . stepEnemies 
@@ -59,6 +57,8 @@ removeDeadObjects :: State -> State
 removeDeadObjects s = s{enemies = removeDead (enemies s),
                         projectiles = removeDead (projectiles s),
                         animations = removeAnimations (animations s) } 
+
+
 
 -- step through the set of keys which are being pressed at the time
 stepDownKeys :: S.Set Key -> State -> State
@@ -90,9 +90,14 @@ input e s = do
 
 -- if a key is down, add to downKeys, but only when in the list of Useractions
 inputKey :: Event -> State -> State
-inputKey (EventKey key Down _ _) s | isJust searched && not (S.member (fromJust searched) uaList) = s
-                                   | otherwise = s {downKeys = S.insert key (downKeys s)}
+inputKey (EventKey key Down _ _) s = case searched of
+                                        Nothing       -> s
+                                        (Just Pause)  -> handleAction Pause s
+                                        (Just action) -> if S.member action uaList
+                                                            then insertKey
+                                                            else s 
                                    where
+                                    insertKey = s{downKeys = S.insert key (downKeys s)}
                                     searched = search key $ inputs s
                                     uaList = case gameLoop s of
                                         Running -> runningUserActions
@@ -135,19 +140,3 @@ handleMouseMove s = s {
                     facing = normalizeV vec
                     vec = ((x, 360 - y) PMath.+ (640, 0)) PMath.- playerPosition (playerState s)
                     (x, y) = mousePosition s
-
--- event handler of clicking while paused
-mouseClick :: State -> IO State
-mouseClick s = 
-    case (gameLoop s) of
-        Saving ->  getAction savingButtonsWithActions      
-        Paused ->  getAction buttonsWithActions
-        Loading -> getAction loadingButtonsWithActions
-    where
-        getAction buttons = do
-            a <- buttons      
-            let mousePos = mousePosition s 
-            let result = filter (isInside mousePos) a
-            if null result
-                then return s
-                else snd (head result) s

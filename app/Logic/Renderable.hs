@@ -31,23 +31,29 @@ stateToPicture state =
 
         gameOverButtons <- gameOverButtonsWithActions
         gameOverButtonsPic <- map fst gameOverButtons `translatedRender` state
+
+        saveButtons <- savingButtonsWithActions
+        saveButtonsPic <- map fst saveButtons `translatedRender` state
+
+        loadButtons <- loadingButtonsWithActions
+        loadButtonsPic <- map fst loadButtons `translatedRender` state
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let scorePic = Color white $ Text $ show $ score state
-
+        {-
         pausedButtons <- getButtons buttonsWithActions
         saveButtons <- getButtons savingButtonsWithActions
         loadButtons <- getButtons loadingButtonsWithActions
         leadScores <- getLeaderBoard
-
+            -}
         let gameLoopPictures = case gameLoop state of
-                                Paused ->  [pausedButtons]
-                                Saving ->  [saveButtons]
-                                Loading -> [loadButtons]
+                                Paused ->  [pauseButtonsPic]
+                                Saving ->  [saveButtonsPic]
+                                Loading -> [loadButtonsPic]
                                -- Leaderboard -> [leadScores]
-                             --   Leaderboard -> [leaderboardButtonsPic]
+                                Leaderboard -> [leaderboardButtonsPic]
                                 GameOver -> [gameOverButtonsPic]
-                                _ -> [Pic]
+                                _ -> []
         let testPictures = [
                             --Test:
                             -- Color white $ Text $ show $ toList $ downKeys state,
@@ -66,13 +72,7 @@ stateToPicture state =
             statePictures ++
             gameLoopPictures ++
             testPictures)
-    where
-        getButtons buttons = do
-            btns <- buttons
-            let btns1 = map fst btns
-            retButtons <- buttonsToPicture btns1
-            return retButtons
-
+{-
 getLeaderBoard :: IO Picture
 getLeaderBoard = do
     exists <- mapM (\i -> checkExists $ "/topScores/score" ++ show i) [1 .. 5]
@@ -85,7 +85,7 @@ getLeaderBoard = do
                 score <- readFile $ "/topScores/score" ++ show int
                 return $ show int ++ ": " ++ score
             mkScores int text = MkButton (0,250 - 90 * int) (600,80) (greyN 0.4) text
-
+-}
 
 
 

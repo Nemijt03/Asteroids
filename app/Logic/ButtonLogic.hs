@@ -3,7 +3,7 @@ module ButtonLogic where
 
 import State
 import Player
-
+import SavingAndLoading
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
@@ -13,8 +13,10 @@ mouseClick s = do
     a <- case gameLoop s of
         Leaderboard -> mkButtonsNoActions $ mkLeaderboardButtons [("sef", 53),("fea",52),("as",10),("je",2)]
         GameOver -> gameOverButtonsWithActions
-        _ -> pausingButtonsWithActions
-
+        Saving ->   savingButtonsWithActions      
+        Loading -> loadingButtonsWithActions
+        Paused -> pausingButtonsWithActions
+        _      -> mkButtonsNoActions [MkButton (0, 250) (600, 100) (greyN 0.4) ""]
     let mousePos = mousePosition s
         filteredList = filter (isInside mousePos) a
     if null filteredList
@@ -44,9 +46,9 @@ pausingButtonsWithActions = do
                     [ -- Actions
                         \s -> return $ s {gameLoop = OptionsMenu},
                         \s -> return $ s {gameLoop = Running},
-                        \s -> return $ s {gameLoop = GameQuit},
-                        saveGame,
-                        loadGame,
+                        \s -> return $ s {gameLoop = GameQuitted},
+                        \s -> return $ s {gameLoop = Saving},
+                        \s -> return $ s {gameLoop = Loading},
                         \s -> return $ s {gameLoop = Leaderboard}
                     ]
 
@@ -62,7 +64,7 @@ gameOverButtonsWithActions = do
                         \s -> return $ s {gameLoop = Running, playerState = (playerState s) {playerLives = 3}},
                         return,
                         return,
-                        \s -> return $ s {gameLoop = GameQuit}
+                        \s -> return $ s {gameLoop = GameQuitted}
                     ]
 
 mkLeaderboardButtons :: [(String, Int)] -> [Button]
@@ -80,14 +82,40 @@ mkLeaderboardButtons xs = f xs 0
                             _ -> 1500
 
 
+savingButtonsWithActions :: IO [(Button, State -> IO State)]
+savingButtonsWithActions = do
+    fileResults <- mapM (\int -> checkExists (getFilePathToSave int)) [1 .. 5] --seeing what files already exists
+    let availabilityStrings = zipWith getSlotAvailability [1 .. 5] fileResults
+    return $ zip (zipWith createSaveButton [1 .. 5] availabilityStrings) --buttons themselves
+                 (map actionPutSave [1 .. 5]) --actions with the buttons
+    where
+        createSaveButton int string = MkButton (0,250 - 100 * int) (600,80) (greyN 0.4) string 
+        getSlotAvailability int False = "<Slot " ++ show int ++ " Available>" 
+        getSlotAvailability int True  = "save " ++ show int
+        actionPutSave int = \s -> do
+            putStateToFile int s{gameLoop = Paused}
+            return s{gameLoop = Paused}
+
+
+loadingButtonsWithActions :: IO [(Button, State -> IO State)]
+loadingButtonsWithActions = do
+     fileResults <- mapM (\int -> checkExists (getFilePathToSave int)) [1 .. 5] --seeing what files already exists
+     let availabilityStrings = zipWith getSlotAvailability [1 .. 5] fileResults
+     return $ zip (zipWith createLoadButton [1 .. 5] availabilityStrings) --buttons themselves
+                  (zipWith actionGetSave    [1 .. 5] fileResults) --actions with the buttons
+     where 
+        createLoadButton int string = MkButton (0,250 - 100 * int) (600,80) (greyN 0.4) string 
+        getSlotAvailability int False = "<Save to this slot first>" 
+        getSlotAvailability int True  = "save " ++ show int
+        actionGetSave int False = \s -> return s
+        actionGetSave int True = \s -> do
+            newS <- getStateFromFile int
+            case newS of
+                Nothing       -> return s 
+                Just newState -> return newState
+
 mkButtonsNoActions :: [Button] -> IO [(Button, State -> IO State)]
 mkButtonsNoActions btns = return $ map ( , return) btns
-
-saveGame :: State -> IO State
-saveGame = undefined
-
-loadGame :: State -> IO State
-loadGame = undefined
 
 
 -- button data type for creating buttons in the UI

@@ -1,11 +1,10 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# language NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
-module SavingAndLoading (savingButtonsWithActions, loadingButtonsWithActions, checkExists) where
+module SavingAndLoading where
 import State
 import GHC.Generics
 import qualified Data.Aeson as Ae
-import Pausing
 import Imports
 import Control.Exception
 import qualified Data.Set as S
@@ -65,6 +64,7 @@ fromSaveableState s =
             playerReloadTime = splayerReloadTime p
         }
         in do
+            standardPics <- standardPictures
             Right playerBMP <- readBMP "images\\ship32.bmp"
             let playerBMPData = bitmapDataOfBMP playerBMP
             let newPlayer = newP{playerBitmapData = playerBMPData}
@@ -79,7 +79,8 @@ fromSaveableState s =
                                     animations      = [],
                                     downKeys        = S.empty,
                                     inputs          = standardInputs,
-                                    randomG         = getPredictableRandom}
+                                    randomG         = getPredictableRandom,
+                                    loadedPictures  = standardPics}
                 in return newState
 
 toSaveablePlayerState :: PlayerState -> SaveablePlayerState
@@ -113,37 +114,7 @@ putStateToFile num state = catch (Ae.encodeFile (getFilePathToSave num) (toSavea
         handler :: IOException -> IO ()
         handler = \e -> return ()
 
-savingButtonsWithActions :: IO [(Button, State -> IO State)]
-savingButtonsWithActions = do
-    fileResults <- mapM (\int -> checkExists (getFilePathToSave int)) [1 .. 5] --seeing what files already exists
-    let availabilityStrings = zipWith getSlotAvailability [1 .. 5] fileResults
-    return $ zip (zipWith createSaveButton [1 .. 5] availabilityStrings) --buttons themselves
-                 (map actionPutSave [1 .. 5]) --actions with the buttons
-    where
-        createSaveButton int string = MkButton (0,250 - 100 * int) (600,80) (greyN 0.4) string 
-        getSlotAvailability int False = "<Slot " ++ show int ++ " Available>" 
-        getSlotAvailability int True  = "save " ++ show int
-        actionPutSave int = \s -> do
-            putStateToFile int s{gameLoop = Paused}
-            return s{gameLoop = Paused}
 
-
-loadingButtonsWithActions :: IO [(Button, State -> IO State)]
-loadingButtonsWithActions = do
-     fileResults <- mapM (\int -> checkExists (getFilePathToSave int)) [1 .. 5] --seeing what files already exists
-     let availabilityStrings = zipWith getSlotAvailability [1 .. 5] fileResults
-     return $ zip (zipWith createLoadButton [1 .. 5] availabilityStrings) --buttons themselves
-                  (zipWith actionGetSave    [1 .. 5] fileResults) --actions with the buttons
-     where 
-        createLoadButton int string = MkButton (0,250 - 100 * int) (600,80) (greyN 0.4) string 
-        getSlotAvailability int False = "<Save to this slot first>" 
-        getSlotAvailability int True  = "save " ++ show int
-        actionGetSave int False = \s -> return s
-        actionGetSave int True = \s -> do
-            newS <- getStateFromFile int
-            case newS of
-                Nothing       -> return s 
-                Just newState -> return newState
 
 checkExists :: FilePath -> IO Bool
 checkExists filePath = catch (do 

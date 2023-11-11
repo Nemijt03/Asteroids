@@ -73,28 +73,6 @@ data LoadedPictures = MkPictures {
                                 } 
                                 deriving (Show, Eq)
 
-standardPictures :: IO LoadedPictures
-standardPictures = do
-    e1 <- loadBMP "images/explosion/1.bmp"
-    e2 <- loadBMP "images/explosion/2.bmp"
-    e3 <- loadBMP "images/explosion/3.bmp"
-    e4 <- loadBMP "images/explosion/4.bmp"
-    e5 <- loadBMP "images/explosion/5.bmp"
-    e6 <- loadBMP "images/explosion/6.bmp"
-
-    pBullet <- loadBMP "images/fire.bmp"
-    eBullet <- loadBMP "images/fire.bmp"
-    sPic <- loadBMP "images/ship2.bmp"
-    aPic <- loadBMP "images/asteroid.bmp"
-
-    return $ MkPictures {
-        playerBullet = pBullet,
-        saucerBullet = eBullet,
-        explosion = [e1, e2, e3, e4, e5, e6],
-        saucerPicture = sPic,
-        asteroidPicture = aPic
-        }
-
 standardState :: IO State
 standardState = do
     Right playerBMP <- readBMP "images\\ship32.bmp"
@@ -178,27 +156,6 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
 
 
 
--- pausing buttons with their actions for mouseClick
-buttonsWithActions :: IO [(Button, State -> IO State)]
-buttonsWithActions = do
-    settingsPic <- loadBMP "images\\settings.bmp"
-    leaderboardPic <- loadBMP "images\\leaderboard.bmp"
-    return $ zip    [ -- Buttons
-                        MkPicButton (450, 300) (greyN 0.4) settingsPic,
-                        MkButton (0, 250) (600, 100) (greyN 0.4) "Continue (esc)",
-                        MkButton (0, -50) (600, 100) (greyN 0.4) "Quit Game (0)",
-                        MkButton (-162, 100) (275, 100) (greyN 0.4) "Save (s)",
-                        MkButton (162, 100) (275, 100) (greyN 0.4) "Load (l)",
-                        MkPicButton (450, 150) (greyN 0.4) $ Scale 2 2 leaderboardPic
-                    ]
-                    [ -- Actions
-                        \s -> return $ s {gameLoop = OptionsMenu},
-                        \s -> return $ s {gameLoop = Running},
-                        \s -> return $ s {gameLoop = GameQuitted},
-                        \s -> return $ s {gameLoop = Saving},
-                        \s -> return $ s {gameLoop = Loading},
-                        \s -> return $ s {gameLoop = Leaderboard}
-                    ]
 
 data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | Saving | Loading
                 deriving (Show, Eq, Enum, Generic)
