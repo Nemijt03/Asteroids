@@ -50,6 +50,7 @@ class Damagable a where
     doDamage :: a -> Int -> a
     isDead :: a -> Bool
     canDamage :: a -> Bool 
+    getDamage :: a -> Int
 
 class Squarable a where
     toSquare :: a -> Square
@@ -72,7 +73,7 @@ isCollision :: (Collidable a, Collidable b) => a -> b -> Bool
 isCollision a b = canDamage a && canDamage b && intersect (toSquare a) (toSquare b) 
 
 collide :: (Collidable a, Collidable b) => a -> b -> (a,b)
-collide a b | isCollision a b = (doDamage a 1, doDamage b 1) --can be changed if a or b have a specific damage value added later
+collide a b | isCollision a b = (doDamage a (getDamage b), doDamage b (getDamage a)) --can be changed if a or b have a specific damage value added later
             | otherwise       = (a, b)
 
 --instances to damage the different objects in the game
@@ -82,16 +83,19 @@ instance Damagable Enemy where
     isDead MkAsteroid{asteroidHealth} = asteroidHealth <= 0
     isDead MkSaucer{saucerHealth}     = saucerHealth <= 0
     canDamage _ = True
+    getDamage _ = 1
 
 instance Damagable PlayerState where
     doDamage player@PlayerState{playerLives} damage = player{playerLives = playerLives - damage}
     isDead PlayerState{playerLives} = playerLives <= 0
     canDamage _ = True
+    getDamage _ = 5
 
 instance Damagable Projectile where
     doDamage projectile _ = projectile{projectileTimeAlive = 0}
     isDead Projectile{projectileTimeAlive} = projectileTimeAlive <= 0
     canDamage Projectile{projectileImmuneTime} = projectileImmuneTime <= 0
+    getDamage _ = 1
 
 --instances to convert the different objects to squares
 instance Squarable Enemy where

@@ -24,7 +24,7 @@ data SaveablePlayerState = SaveablePlayerState{
                         } deriving (Show, Eq, Generic)
 
 
---state without things not saveable to Json via Generic or instancing: missing randomG, animations, inputs, downkeys
+--state without things not saveable to Json via Generic or instancing: missing randomG, animations, inputs, downkeys, loadedPictures
 data SaveableState = SaveableState{
                         senemies :: [Enemy],
                         sprojectiles :: [Projectile],

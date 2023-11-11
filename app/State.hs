@@ -108,9 +108,6 @@ getPredictableRandom = mkStdGen 10 --this will always give the same result
 standardOptions :: Options
 standardOptions = MkOptions {mouseInput = False, ietsAnders = False}
 
-getLeaderBoard :: IO [(String, Int)] -- (Name, Score)
--- PlaceHolder
-getLeaderBoard = return [("sef", 2),("fea",10),("as",42),("je",102),("sef", 2),("fea",10),("as",42),("je",102),("sef", 2),("fea",10),("as",42),("je",102),("sef", 2),("fea",10),("as",42),("je",102)]
 
 -- will step projectiles
 stepProjectiles :: State -> State
@@ -140,11 +137,11 @@ doCollision s@State{enemies, projectiles, playerState} =
         in s{enemies = newE, projectiles = newPr, playerState = newPl}
 
 checkPlayerDeath :: State -> State
-checkPlayerDeath s@State{playerState} | playerLives playerState <= 0 = s{gameLoop = GameOver}
+checkPlayerDeath s@State{playerState} | isDead playerState = s{gameLoop = GameOver}
                                       | otherwise = s
 -- will be death of player and spawn in death animation
 playerDies :: State -> State
-playerDies s = s -- make bitmap go into pieves and explode it like that
+playerDies s = s -- make bitmap go into pieves and explode it like that (doesn't this then need to be IO?)
 
 -- shoots a projectile from the player in the direction it's facing
 -- also adds the speed of the projectile to the speed of the player

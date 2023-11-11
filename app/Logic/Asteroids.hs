@@ -18,12 +18,15 @@ import SpawnEnemies
 import Renderable
 import ButtonLogic
 import SavingAndLoading
+import LeaderBoardLogic
+
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
 step time state = do
+    recordScore "aaa" state
     case gameLoop state of
         GameQuitted -> exitSuccess
         _ -> return $ stepGameState time state
@@ -74,11 +77,12 @@ calculateScore projectiles enemies score = score + foldr (getScoreProjectile) 0 
 
         --100 for the hit alone, 1000 for destruction asteroid, 2500 for destruction saucer
         seeIfHitEnemy :: Projectile -> Enemy -> Int -> Int
-        seeIfHitEnemy pr en sc | isCollision pr en = 100 + if isDead(snd $ collide pr en) 
-                                                            then case en of
-                                                                MkAsteroid{} -> 1000
-                                                                MkSaucer{}   -> 2500
-                                                            else 0                                                           
+        seeIfHitEnemy pr en sc | not (isDead en) && isCollision pr en 
+                                    = 100 + if isDead(snd $ collide pr en) 
+                                                then case en of
+                                                    MkAsteroid{} -> 1000
+                                                    MkSaucer{}   -> 2500
+                                                else 0                                                           
                                | otherwise         = sc
 
 -- step through the set of keys which are being pressed at the time
@@ -143,6 +147,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-10))
                         Saving -> s{gameLoop = Paused}
                         Loading -> s {gameLoop = Paused}
                         Leaderboard -> s{gameLoop = Paused}
+                        GameOver    -> s
                         _ -> s{gameLoop = Paused}
                     | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
                     | ua == TriggerOptions = s {gameLoop = OptionsMenu}
@@ -162,3 +167,8 @@ handleMouseMove s = s {
                     facing = normalizeV vec
                     vec = ((x, 360 - y) PMath.+ (640, 0)) PMath.- playerPosition (playerState s)
                     (x, y) = mousePosition s
+
+recordScore :: String -> State -> IO ()
+recordScore name s@State{gameLoop = gstate, playerState = plstate} = if (gstate == Running && isDead plstate) 
+                then toLeaderBoard (name, score s)
+                else return ()

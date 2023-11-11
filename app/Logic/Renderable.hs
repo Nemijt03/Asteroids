@@ -13,7 +13,7 @@ import ButtonLogic
 import SavingAndLoading
 import Graphics.UI.GLUT (Size(Size))
 import Graphics.UI.GLUT.Fonts
-
+import LeaderBoardLogic
 
 stateToPicture :: State -> IO Picture
 stateToPicture state =
@@ -40,17 +40,11 @@ stateToPicture state =
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let scorePic = Color white $ Text $ show $ score state
-        {-
-        pausedButtons <- getButtons buttonsWithActions
-        saveButtons <- getButtons savingButtonsWithActions
-        loadButtons <- getButtons loadingButtonsWithActions
-        leadScores <- getLeaderBoard
-            -}
+
         let gameLoopPictures = case gameLoop state of
                                 Paused ->  [pauseButtonsPic]
                                 Saving ->  [saveButtonsPic]
                                 Loading -> [loadButtonsPic]
-                               -- Leaderboard -> [leadScores]
                                 Leaderboard -> [leaderboardButtonsPic]
                                 GameOver -> [gameOverButtonsPic]
                                 _ -> []
@@ -72,22 +66,6 @@ stateToPicture state =
             statePictures ++
             gameLoopPictures ++
             testPictures)
-{-
-getLeaderBoard :: IO Picture
-getLeaderBoard = do
-    exists <- mapM (\i -> checkExists $ "/topScores/score" ++ show i) [1 .. 5]
-    texts <- mapM (uncurry getLeaderScores) $ zip exists [1 .. 5]
-    let scores = zipWith mkScores [1 .. 5] texts 
-    buttonsToPicture scores
-        where
-            getLeaderScores False int = return $ "score " ++ show int ++ " missing"
-            getLeaderScores True int = do
-                score <- readFile $ "/topScores/score" ++ show int
-                return $ show int ++ ": " ++ score
-            mkScores int text = MkButton (0,250 - 90 * int) (600,80) (greyN 0.4) text
--}
-
-
 
 
 class Renderable a where
