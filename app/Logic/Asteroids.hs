@@ -20,6 +20,7 @@ import SpawnEnemies
 import Renderable
 import ButtonLogic
 import LeaderBoardLogic
+import Graphics.UI.GLUT (Size(Size))
 
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
@@ -114,15 +115,18 @@ input :: Event -> State -> IO State
 input e s = do
     let rtrn = return $ inputKey e s
     -- call mouseClick if LeftButton is clicked
-    if gameLoop s /= Running
-        then case e of
-            EventKey key Up _ _ -> case key of
-                MouseButton b -> case b of
-                    LeftButton -> mouseClick $ inputKey e s
+    case gameLoop s of
+        Running -> case e of
+                EventMotion _ -> handleMouseMove $ inputKey e s
+                _ -> rtrn
+
+        _ -> case e of
+                EventKey key Up _ _ -> case key of
+                    MouseButton b -> case b of
+                        LeftButton -> mouseClick $ inputKey e s
+                        _ -> rtrn
                     _ -> rtrn
                 _ -> rtrn
-            _ -> rtrn
-        else rtrn
 
 -- if a key is down, add to downKeys, but only when in the list of Useractions.
 --pause is special, as it should only work on the frame it is pressed
@@ -149,8 +153,7 @@ inputKey (EventKey key Down _ _) s =
 
 -- remove key from downKeys
 inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
-inputKey (EventMotion pos) s | gameLoop s == Running = handleMouseMove $ s {mousePosition = pos}
-                             | otherwise = s {mousePosition = pos}
+inputKey (EventMotion pos) s = s {mousePosition = pos}
 inputKey _ s = s
 
 -- turn a Useraction into a change in the state
@@ -174,15 +177,19 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (-rotation)
                         rotatePlayer rotation = chngPs (ps {playerFacing = rotation `rotateV` playerFacing ps})
                         accelerate acceleration = chngPs (addAcceleration acceleration ps)
 
-handleMouseMove :: State -> State
-handleMouseMove s = s {
+handleMouseMove :: State -> IO State
+handleMouseMove s = do 
+    Size w h <- get windowSize
+    let (cx, cy) = (w `div` 2, h `div` 2)
+        relativePos = second (fromIntegral cy -) $ mousePosition s
+        
+        facing = normalizeV vec
+        vec = (relativePos PMath.+ (fromIntegral cx, 0)) PMath.- playerPosition (playerState s)
+    
+    return s {
                         playerState = (playerState s) {playerFacing = facing},
                         options = (options s) {mouseInput = not $ mouseInput (options s)}
                     }
-                where
-                    facing = normalizeV vec
-                    vec = ((x, 360 - y) PMath.+ (640, 0)) PMath.- playerPosition (playerState s)
-                    (x, y) = mousePosition s
 
 recordScore :: State -> IO ()
 recordScore s@State{name} = toLeaderBoard (clampList 3 ' ' name, score s)
