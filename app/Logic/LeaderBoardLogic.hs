@@ -41,4 +41,4 @@ getLeaderBoardFilePath :: Int -> String
 getLeaderBoardFilePath int = "leaderboard/score" ++ show int ++ ".json"
 
 maxEntries :: Int
-maxEntries = 25
+maxEntries = 15
