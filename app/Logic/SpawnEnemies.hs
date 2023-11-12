@@ -10,7 +10,7 @@ import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 
 --main export module
 spawnEnemy :: State -> State
-spawnEnemy s@State{timePlayed,enemies,randomG} | mod (floor timePlayed) 30 == 0 
+spawnEnemy s@State{timePlayed,enemies,randomG} | mod (floor timePlayed) (30 :: Int) == 0 
                                                  && length enemies < maxEnemies timePlayed = --if there still is room
     let (r1, g') = random randomG in--random between 0 and 1
 

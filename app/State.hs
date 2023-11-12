@@ -157,7 +157,7 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
 
 
 
-data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | RecordScore | Saving | Loading
+data GameLoop = Running | Paused | GameOver | GameQuit | Leaderboard | RecordScore | Saving | Loading
                 deriving (Show, Eq, Enum, Generic)
 
 instance Ae.FromJSON GameLoop

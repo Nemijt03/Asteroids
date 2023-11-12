@@ -1,5 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use :" #-}
+{-# OPTIONS_GHC -Wno-name-shadowing #-}
 module Asteroids where
 
 import Imports
@@ -13,11 +14,10 @@ import System.Exit
 import Collision
 import qualified Data.Set as S
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
-import Animation 
+import Animation
 import SpawnEnemies
 import Renderable
 import ButtonLogic
-import SavingAndLoading
 import LeaderBoardLogic
 
 -- import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
@@ -25,16 +25,15 @@ import LeaderBoardLogic
 
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
-step time state = do
-    case gameLoop state of
-        GameOver -> do
-            if((name state) /= "") 
-                then do
-                    recordScore state
-                    return $ stepGameState time state{name = ""}
-                else return $ stepGameState time state            
-        GameQuitted -> exitSuccess
-        _ -> return $ stepGameState time state
+step time state = case gameLoop state of
+    GameOver -> do
+        if name state /= ""
+            then do
+                recordScore state
+                return $ stepGameState time state{name = ""}
+            else return $ stepGameState time state
+    GameQuit -> exitSuccess
+    _ -> return $ stepGameState time state
 
 -- pure step function.
 stepGameState :: Float -> State -> State
@@ -48,10 +47,10 @@ stepGameState time s =
                     _ -> stepDownKeys (downKeys s) s
 
     where stateFunctions = stepDownKeys (downKeys s)
-                           . spawnEnemy 
-                           . stepEnemiesShoot 
-                           . stepEnemies 
-                           . stepProjectiles 
+                           . spawnEnemy
+                           . stepEnemiesShoot
+                           . stepEnemies
+                           . stepProjectiles
                            . doCollision
                            . checkPlayerDeath
                            . stepAnimations
@@ -60,34 +59,34 @@ stepGameState time s =
 
 mkExplosions :: State -> State
 mkExplosions s = s {animations = animations s ++ newA}
-    where 
+    where
         newA = map (makeEx . getPosition) (filter isDead (enemies s))
         makeEx = mkExplosion (explosion (loadedPictures s))
 
 removeDeadObjects :: State -> State
 removeDeadObjects s = s{enemies = removeDead (enemies s),
                         projectiles = removeDead (projectiles s),
-                        animations = removeAnimations (animations s) } 
+                        animations = removeAnimations (animations s) }
 
 stepUpdateScore :: State -> Int
-stepUpdateScore State{projectiles = pr, enemies = en, score = sc} = 
-    let playerPr = filter (\p -> (isFromPlayer p)) pr 
+stepUpdateScore State{projectiles = pr, enemies = en, score = sc} =
+    let playerPr = filter isFromPlayer pr
         in calculateScore playerPr en sc
 
 calculateScore :: [Projectile] -> [Enemy] -> Int -> Int
-calculateScore projectiles enemies score = score + foldr (getScoreProjectile) 0 projectiles
+calculateScore ps es sc = sc + foldr getScoreProjectile 0 ps
     where
         getScoreProjectile :: Projectile -> Int -> Int
-        getScoreProjectile pr sc = foldr (seeIfHitEnemy pr) sc enemies
+        getScoreProjectile pr sc = foldr (seeIfHitEnemy pr) sc es
 
         --100 for the hit alone, 1000 for destruction asteroid, 2500 for destruction saucer
         seeIfHitEnemy :: Projectile -> Enemy -> Int -> Int
-        seeIfHitEnemy pr en sc | not (isDead en) && isCollision pr en 
-                                    = 100 + if isDead(snd $ collide pr en) 
+        seeIfHitEnemy pr en sc | not (isDead en) && isCollision pr en
+                                    = 100 + if isDead (snd $ collide pr en)
                                                 then case en of
                                                     MkAsteroid{} -> 1000
                                                     MkSaucer{}   -> 2500
-                                                else 0                                                           
+                                                else 0
                                | otherwise         = sc
 
 -- step through the set of keys which are being pressed at the time
@@ -121,10 +120,10 @@ input e s = do
 -- if a key is down, add to downKeys, but only when in the list of Useractions.
 --pause is special, as it should only work on the frame it is pressed
 inputKey :: Event -> State -> State
-inputKey (EventKey key Down _ _) s = 
-    case (gameLoop s) of
+inputKey (EventKey key Down _ _) s =
+    case gameLoop s of
         RecordScore -> case key of
-                        (Char c)                  -> s{name = (name s) ++ [c]}
+                        (Char c)                  -> s{name = name s ++ [c]}
                         (SpecialKey KeyBackspace) -> s{name = init (name s)}
                         (SpecialKey KeyEnter)     -> s{gameLoop = GameOver}
                         _                         -> s
@@ -133,17 +132,17 @@ inputKey (EventKey key Down _ _) s =
                         (Just Pause)  -> handleAction Pause s
                         (Just action) -> if S.member action uaList
                                             then insertKey
-                                            else s 
+                                            else s
                     where
                         insertKey = s{downKeys = S.insert key (downKeys s)}
                         searched = search key $ inputs s
                         uaList = case gameLoop s of
                             Running -> runningUserActions
                             _ -> pausedUserActions
-                                        
+
 -- remove key from downKeys
 inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
-inputKey (EventMotion pos) s | gameLoop s == Running = handleMouseMove $ s {mousePosition = pos} 
+inputKey (EventMotion pos) s | gameLoop s == Running = handleMouseMove $ s {mousePosition = pos}
                              | otherwise = s {mousePosition = pos}
 inputKey _ s = s
 
@@ -158,8 +157,7 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-10))
                         Paused   -> s {gameLoop = Running}
                         GameOver -> s
                         _        -> s {gameLoop = Paused}
-                    | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
-                    | ua == TriggerOptions = s {gameLoop = OptionsMenu}
+                    | ua == TriggerQuitGame = s {gameLoop = GameQuit}
                     | otherwise = s
                     where
                         ps = playerState s
@@ -178,7 +176,7 @@ handleMouseMove s = s {
                     (x, y) = mousePosition s
 
 recordScore :: State -> IO ()
-recordScore s@State{gameLoop = gstate, playerState = plstate, name = nam} = toLeaderBoard (clampList 3 ' ' nam, score s)
+recordScore s@State{name = nam} = toLeaderBoard (clampList 3 ' ' nam, score s)
 
 clampList :: Int -> a -> [a] -> [a]
 clampList i e list | length list < i = list ++ replicate (i - length list) e

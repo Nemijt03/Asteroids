@@ -1,7 +1,6 @@
 module Animation where
 
 import Imports
-import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
 -- Animation data type
 data Animation = MkAnimation {
                         animationPosition :: Point,

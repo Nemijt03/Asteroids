@@ -1,6 +1,6 @@
 {-# LANGUAGE DeriveGeneric #-}
-{-# language NamedFieldPuns #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# OPTIONS_GHC -Wno-missing-fields #-}
 module SavingAndLoading where
 import State
 import GHC.Generics
@@ -47,7 +47,7 @@ toSaveableState :: State -> SaveableState
 toSaveableState s =
         SaveableState { senemies = enemies s ,
                         sprojectiles = projectiles s,
-                        splayerState = (toSaveablePlayerState (playerState s)),
+                        splayerState = toSaveablePlayerState (playerState s),
                         sscore = score s,
                         stimePlayed = timePlayed s,
                         sgameLoop = gameLoop s,
@@ -110,14 +110,14 @@ getStateFromFile num =  do
         Nothing -> return Nothing
         Just s  -> do
             newS <- fromSaveableState s
-            (return $ Just newS)
+            return $ Just newS
 
 putStateToFile :: Int -> State -> IO ()
 putStateToFile num state = catch action handler 
     where
         action = Ae.encodeFile (getFilePathToSave num) (toSaveableState state)
         handler :: IOException -> IO ()
-        handler = \e -> return ()
+        handler _ = return ()
 
 checkExists :: FilePath -> IO Bool
 checkExists filePath = catch (do 
@@ -127,4 +127,4 @@ checkExists filePath = catch (do
         handler
     where
         handler :: IOException -> IO Bool
-        handler = \e -> return False
+        handler _ = return False
