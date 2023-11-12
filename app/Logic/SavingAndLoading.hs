@@ -81,7 +81,8 @@ fromSaveableState s =
                                     downKeys        = S.empty,
                                     inputs          = standardInputs,
                                     randomG         = getPredictableRandom,
-                                    loadedPictures  = standardPics}
+                                    loadedPictures  = standardPics,
+                                    name           = ""}
                 in return newState
 
 toSaveablePlayerState :: PlayerState -> SaveablePlayerState

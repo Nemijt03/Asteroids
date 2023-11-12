@@ -31,7 +31,8 @@ data State = State {    -- All positions of the State will be defined in a 16:9 
                         options :: Options,
                         randomG :: StdGen,
                         inputs :: Inputs,
-                        loadedPictures :: LoadedPictures
+                        loadedPictures :: LoadedPictures,
+                        name           :: String
             }
             deriving (Show, Eq)
 
@@ -99,7 +100,8 @@ standardState = do
             mousePosition = (0, 0),
             options = standardOptions,
             randomG = getPredictableRandom,
-            loadedPictures = standardPics
+            loadedPictures = standardPics,
+            name = ""
 }
 
 getPredictableRandom :: StdGen 
@@ -137,8 +139,8 @@ doCollision s@State{enemies, projectiles, playerState} =
         in s{enemies = newE, projectiles = newPr, playerState = newPl}
 
 checkPlayerDeath :: State -> State
-checkPlayerDeath s@State{playerState} | isDead playerState = s{gameLoop = GameOver}
-                                      | otherwise = s
+checkPlayerDeath s@State{playerState} | isDead playerState = s{gameLoop = RecordScore}
+                                      | otherwise          = s
 -- will be death of player and spawn in death animation
 playerDies :: State -> State
 playerDies s = s -- make bitmap go into pieves and explode it like that (doesn't this then need to be IO?)
@@ -154,7 +156,7 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
 
 
 
-data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | Saving | Loading
+data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | RecordScore | Saving | Loading
                 deriving (Show, Eq, Enum, Generic)
 
 instance Ae.FromJSON GameLoop

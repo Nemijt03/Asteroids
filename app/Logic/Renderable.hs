@@ -37,6 +37,9 @@ stateToPicture state =
 
         loadButtons <- loadingButtonsWithActions
         loadButtonsPic <- map fst loadButtons `translatedRender` state
+
+        nameButtons <- getPlayerNameButtons (name state) (score state)
+        nameButtonsPic <- map fst nameButtons `translatedRender` state
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let scorePic = Color white $ Text $ show $ score state
@@ -47,6 +50,7 @@ stateToPicture state =
                                 Loading -> [loadButtonsPic]
                                 Leaderboard -> [leaderboardButtonsPic]
                                 GameOver -> [gameOverButtonsPic]
+                                RecordScore -> [nameButtonsPic]
                                 _ -> []
         let testPictures = [
                             --Test:

@@ -9,7 +9,7 @@ type LeaderboardEntry = (String, Int)
 
 getLeaderBoard :: IO Leaderboard
 getLeaderBoard = do
-    results <- mapM getScore [1 .. 25]
+    results <- mapM getScore [1 .. maxEntries]
     return $ filter (\a -> a /= ("",0)) results
 
 getScore :: Int -> IO LeaderboardEntry
@@ -25,20 +25,21 @@ getScore int = do
         
 
 putScore :: LeaderboardEntry -> Int -> IO ()
-putScore tuple int = catch (encodeFile (getLeaderBoardFilePath int) tuple) handler
+putScore tuple int = catch action handler
     where
+        action = encodeFile (getLeaderBoardFilePath int) tuple
         handler :: IOException -> IO ()
         handler = \e -> return ()
 
 toLeaderBoard :: LeaderboardEntry -> IO ()
 toLeaderBoard tuple = do
     leaderBoard <- getLeaderBoard
-    let newLeaderBoard = insertIntoLeaderBoard tuple leaderBoard
-    mapM (\(t,int) -> putScore t int) $ zip newLeaderBoard [1 .. 25]
+    let newLeaderBoard = sortBy (\(_,entryScore) (_, score) -> score `compare` entryScore) (tuple : leaderBoard)
+    mapM (\(t,int) -> putScore t int) $ zip newLeaderBoard [1 .. maxEntries]
     return ()
-
-insertIntoLeaderBoard :: LeaderboardEntry -> Leaderboard -> Leaderboard
-insertIntoLeaderBoard = insertBy (\(_,entryScore) (_, score) -> entryScore `compare` score)
 
 getLeaderBoardFilePath :: Int -> String
 getLeaderBoardFilePath int = "leaderboard/score" ++ show int ++ ".json"
+
+maxEntries :: Int
+maxEntries = 25

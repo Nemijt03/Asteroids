@@ -26,8 +26,13 @@ import LeaderBoardLogic
 -- | Handle one iteration of the game
 step :: Float -> State -> IO State
 step time state = do
-    recordScore "aaa" state
     case gameLoop state of
+        GameOver -> do
+            if((name state) /= "") 
+                then do
+                    recordScore state
+                    return $ stepGameState time state{name = ""}
+                else return $ stepGameState time state            
         GameQuitted -> exitSuccess
         _ -> return $ stepGameState time state
 
@@ -116,18 +121,25 @@ input e s = do
 -- if a key is down, add to downKeys, but only when in the list of Useractions.
 --pause is special, as it should only work on the frame it is pressed
 inputKey :: Event -> State -> State
-inputKey (EventKey key Down _ _) s = case searched of
-                                        Nothing       -> s
-                                        (Just Pause)  -> handleAction Pause s
-                                        (Just action) -> if S.member action uaList
-                                                            then insertKey
-                                                            else s 
-                                   where
-                                    insertKey = s{downKeys = S.insert key (downKeys s)}
-                                    searched = search key $ inputs s
-                                    uaList = case gameLoop s of
-                                        Running -> runningUserActions
-                                        _ -> pausedUserActions
+inputKey (EventKey key Down _ _) s = 
+    case (gameLoop s) of
+        RecordScore -> case key of
+                        (Char c)                  -> s{name = (name s) ++ [c]}
+                        (SpecialKey KeyBackspace) -> s{name = init (name s)}
+                        (SpecialKey KeyEnter)     -> s{gameLoop = GameOver}
+                        _                         -> s
+        _           -> case searched of
+                        Nothing       -> s
+                        (Just Pause)  -> handleAction Pause s
+                        (Just action) -> if S.member action uaList
+                                            then insertKey
+                                            else s 
+                    where
+                        insertKey = s{downKeys = S.insert key (downKeys s)}
+                        searched = search key $ inputs s
+                        uaList = case gameLoop s of
+                            Running -> runningUserActions
+                            _ -> pausedUserActions
                                         
 -- remove key from downKeys
 inputKey (EventKey key Up _ _) s = s {downKeys = S.delete key (downKeys s)}
@@ -143,12 +155,9 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-10))
                     | ua == Backward = accelerate (-0.7)
                     | ua == Shoot = shootFromPlayer s
                     | ua == Pause = case gameLoop s of
-                        Paused -> s {gameLoop = Running}
-                        Saving -> s{gameLoop = Paused}
-                        Loading -> s {gameLoop = Paused}
-                        Leaderboard -> s{gameLoop = Paused}
-                        GameOver    -> s
-                        _ -> s{gameLoop = Paused}
+                        Paused   -> s {gameLoop = Running}
+                        GameOver -> s
+                        _        -> s {gameLoop = Paused}
                     | ua == TriggerQuitGame = s {gameLoop = GameQuitted}
                     | ua == TriggerOptions = s {gameLoop = OptionsMenu}
                     | otherwise = s
@@ -168,7 +177,9 @@ handleMouseMove s = s {
                     vec = ((x, 360 - y) PMath.+ (640, 0)) PMath.- playerPosition (playerState s)
                     (x, y) = mousePosition s
 
-recordScore :: String -> State -> IO ()
-recordScore name s@State{gameLoop = gstate, playerState = plstate} = if (gstate == Running && isDead plstate) 
-                then toLeaderBoard (name, score s)
-                else return ()
+recordScore :: State -> IO ()
+recordScore s@State{gameLoop = gstate, playerState = plstate, name = nam} = toLeaderBoard (clampList 3 ' ' nam, score s)
+
+clampList :: Int -> a -> [a] -> [a]
+clampList i e list | length list < i = list ++ replicate (i - length list) e
+                   | otherwise       = take i list
