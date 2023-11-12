@@ -20,8 +20,9 @@ mkExplosion pics position = MkAnimation {
                         onFrame = 0,
                         timeFrameActive = 0,
                         timePerFrame = 10,
-                        pictureFrames = map (Scale 1.5 1.5) pics
+                        pictureFrames = map (Scale sF sF) pics
                     }
+                    where sF = 1.5
 
 stepAnimation :: Animation -> Animation
 stepAnimation a | checkTime =  a {timeFrameActive = 0, onFrame = onFrame a + 1}
@@ -37,7 +38,7 @@ removeAnimations = foldr func []
                 checkTime a = timeFrameActive a >= timePerFrame a
 
 
--- will devide bmpdata into different sections for easy explosion (not implemented yet)
+-- will devide bmpdata into different sections for easy explosion (proof of concept for bitmap explosion)
 bmpDataToPieces :: BitmapData -> [Picture]
 bmpDataToPieces bmpData = [
                             BitmapSection tl bmpData,

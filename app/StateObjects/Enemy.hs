@@ -49,15 +49,19 @@ moveEnemy s@MkSaucer{saucerAcceleration = acc, saucerPosition = pos, saucerReloa
              saucerSpeed = updatedSp, 
              saucerReloadTime = rel - 1}
     where
-        checkSpeed vec | magV vec > 8 = mulSV 8 $ normalizeV vec
+        checkSpeed vec | magV vec > maxMagnitude = mulSV maxMagnitude $ normalizeV vec
                        | otherwise    = vec
+        maxMagnitude = 8
 
 
 ---Quite simpel: Gets the vector to the player, normalizes it, then slightly rotates it so it does not head directly to the player. 
 --maybe change it later so it depends on which side of the player and the distance, to deteremine what it will do.
 changeAcceleration  :: Vector -> Point -> Point -> Vector
-changeAcceleration acc saucerPos playerPos = let toPlayer = rotateV (degToRad 20) $ normalizeV $ playerPos PMath.- saucerPos
-                                             in mulSV 0.3 $ acc PMath.+ toPlayer
+changeAcceleration acc saucerPos playerPos = mulSV acceleration $ acc PMath.+ toPlayer
+    where
+        toPlayer = rotateV rotation $ normalizeV $ playerPos PMath.- saucerPos 
+        rotation = degToRad 20
+        acceleration = 0.3 
 
 
 

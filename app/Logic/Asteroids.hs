@@ -1,6 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use :" #-}
 {-# OPTIONS_GHC -Wno-name-shadowing #-}
+{-# LANGUAGE NamedFieldPuns #-}
 module Asteroids where
 
 import Imports
@@ -81,13 +82,19 @@ calculateScore ps es sc = sc + foldr getScoreProjectile 0 ps
 
         --100 for the hit alone, 1000 for destruction asteroid, 2500 for destruction saucer
         seeIfHitEnemy :: Projectile -> Enemy -> Int -> Int
-        seeIfHitEnemy pr en sc | not (isDead en) && isCollision pr en
-                                    = 100 + if isDead (snd $ collide pr en)
+        seeIfHitEnemy pr en sc  | not (isDead en) && isCollision pr en
+                                    = pointForHit + pointForDestruction
+                                | otherwise         = sc
+                                    where
+                                        pointForHit = 100
+                                        pointForDestruction =
+                                            if isDead (snd $ collide pr en)
                                                 then case en of
-                                                    MkAsteroid{} -> 1000
-                                                    MkSaucer{}   -> 2500
+                                                    MkAsteroid{} -> asteroidDestruction
+                                                    MkSaucer{}   -> saucerDestruction
                                                 else 0
-                               | otherwise         = sc
+                                        asteroidDestruction = 1000
+                                        saucerDestruction = 2500
 
 -- step through the set of keys which are being pressed at the time
 stepDownKeys :: S.Set Key -> State -> State
@@ -148,10 +155,10 @@ inputKey _ s = s
 
 -- turn a Useraction into a change in the state
 handleAction :: UserAction -> State -> State
-handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-10))
-                    | ua == TurnRight = rotatePlayer (degToRad 10)
-                    | ua == Forward = accelerate 0.7
-                    | ua == Backward = accelerate (-0.7)
+handleAction ua s   | ua == TurnLeft = rotatePlayer (-rotation)
+                    | ua == TurnRight = rotatePlayer rotation
+                    | ua == Forward = accelerate acceleration
+                    | ua == Backward = accelerate (-acceleration)
                     | ua == Shoot = shootFromPlayer s
                     | ua == Pause = case gameLoop s of
                         Paused   -> s {gameLoop = Running}
@@ -160,6 +167,8 @@ handleAction ua s   | ua == TurnLeft = rotatePlayer (degToRad (-10))
                     | ua == TriggerQuitGame = s {gameLoop = GameQuit}
                     | otherwise = s
                     where
+                        rotation = degToRad 10
+                        acceleration = 0.7
                         ps = playerState s
                         chngPs x = s {playerState = x}
                         rotatePlayer rotation = chngPs (ps {playerFacing = rotation `rotateV` playerFacing ps})
@@ -176,7 +185,7 @@ handleMouseMove s = s {
                     (x, y) = mousePosition s
 
 recordScore :: State -> IO ()
-recordScore s@State{name = nam} = toLeaderBoard (clampList 3 ' ' nam, score s)
+recordScore s@State{name} = toLeaderBoard (clampList 3 ' ' name, score s)
 
 clampList :: Int -> a -> [a] -> [a]
 clampList i e list | length list < i = list ++ replicate (i - length list) e

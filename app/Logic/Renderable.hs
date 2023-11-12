@@ -1,5 +1,6 @@
 {-# language NamedFieldPuns #-}
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+{-# LANGUAGE InstanceSigs #-}
 module Renderable where
 
 import Imports
@@ -44,6 +45,7 @@ stateToPicture state =
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
         let scorePic = Translate 300 300 $ Scale 0.4 0.4 $ Color white $ Text $ "Score: " ++ show (score state)
+        let livesPic = Translate (-300) 300 $ Scale 0.4 0.4 $ Color white $ Text ("Lives: " ++ show (playerLives (playerState state)))
 
         let gameLoopPictures = case gameLoop state of
                                 Paused ->  [pauseButtonsPic]
@@ -62,7 +64,7 @@ stateToPicture state =
                             projectilesPic,
                             animationsPic,
                             player,
-                            -- gameLoopShow --,
+                            livesPic,
                             scorePic
                         ]
 
@@ -97,20 +99,23 @@ class Renderable a where
 
 instance Renderable Projectile where
     render projectile s =
-        Rotate rotation $ Rotate (-90) pic
+        Rotate rotation $ Rotate standardRotation pic
             where 
                 rotation = radToDeg $ argV $ normalizeV $ projectileSpeed projectile
                 pic | isFromPlayer projectile = playerBullet $ loadedPictures s
                     | otherwise = saucerBullet $ loadedPictures s
+                standardRotation = -90
 
+    getPosition :: Projectile -> (Float, Float)
     getPosition = projectilePosition
 
 
 instance Renderable PlayerState where
     render player _ = Rotate rotation bmp
         where
-            bmp = Rotate 90 $ Bitmap $ playerBitmapData player
+            bmp = Rotate standardRotation $ Bitmap $ playerBitmapData player
             rotation = radToDeg (argV (playerFacing player))
+            standardRotation = 90
 
     getPosition = playerPosition
 
@@ -147,17 +152,19 @@ instance Renderable Button where
             (MkButton (x, y) (w, h) c s) -> do
                 width <- stringWidth Roman s
                 let offset = fromIntegral $ negate $ width `div` 4
+                    offsety = -20
+                    sF = 0.5
 
                 return $ Translate x y $ Pictures [
                         Color c $ rectangleWire w h,
-                        Translate offset (-20) $ Scale 0.5 0.5 $ Color white $ Text s
+                        Translate offset offsety $ Scale sF sF $ Color white $ Text s
                     ]
 
 -- Picture button is automatically square with size 100x100
             (MkPicButton (x, y) c pic) -> return $ Translate x y $ Pictures [
-                                        Color c $ rectangleWire 100 100,
+                                        Color c $ rectangleWire size size,
                                         pic
-                                    ]
+                                    ] where size = 100
 
 
 instance (Renderable a) => Renderable [a] where

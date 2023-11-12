@@ -5,19 +5,22 @@ import State
 import SavingAndLoading
 import Imports
 import qualified Graphics.Gloss.Data.Point.Arithmetic as PMath
+import LeaderBoardLogic
 
 -- event handler of clicking while paused
 mouseClick :: State -> IO State
 mouseClick s = do
+    leaderBoard <- getLeaderBoard
     a <- case gameLoop s of
-        Leaderboard -> mkButtonsNoActions $ mkLeaderboardButtons [("sef", 53),("fea",52),("as",10),("je",2)]
+        Leaderboard -> mkButtonsNoActions $ mkLeaderboardButtons leaderBoard
         GameOver -> gameOverButtonsWithActions (score s)
         Saving ->   savingButtonsWithActions
         Loading -> loadingButtonsWithActions
         Paused -> pausingButtonsWithActions
-        _      -> mkButtonsNoActions [MkButton (0, 250) (600, 100) (greyN 0.4) ""]
+        _      -> mkButtonsNoActions [standardButton]
     let mousePos = mousePosition s
         filteredList = filter (isInside mousePos) a
+    
     if null filteredList
         then return s
         else snd (head filteredList) s
@@ -72,13 +75,14 @@ mkLeaderboardButtons xs = f xs 0
         f :: [(String, Int)] -> Int -> [Button]
         f [] _ = []
         f ((n, s):ss) i =
-            MkButton (x, 300 + fromIntegral (i `mod` 5) * (-100)) (350, 100) (greyN 0.4) (n ++ ": " ++ show s) : f ss (i + 1)
+            MkButton (x, y) (350, 100) (greyN 0.4) (n ++ ": " ++ show s) : f ss (i + 1)
                 where
                     x = case i `div` 5 of
                             0 -> -350
                             1 -> 0
                             2 -> 350
                             _ -> 1500
+                    y = -100 * fromIntegral (i `mod` 5) + 300
 
 
 savingButtonsWithActions :: IO [(Button, State -> IO State)]
@@ -116,6 +120,8 @@ loadingButtonsWithActions = do
 mkButtonsNoActions :: [Button] -> IO [(Button, State -> IO State)]
 mkButtonsNoActions btns = return $ map ( , return) btns
 
+standardButton :: Button
+standardButton = MkButton (0, 250) (600, 100) (greyN 0.4) ""
 
 -- button data type for creating buttons in the UI
 data Button = MkButton (Float, Float) (Float, Float) Color String | MkPicButton (Float, Float) Color Picture
