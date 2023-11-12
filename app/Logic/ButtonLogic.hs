@@ -79,7 +79,7 @@ mkLeaderboardButtons xs = f xs 0
 savingButtonsWithActions :: IO [(Button, State -> IO State)]
 savingButtonsWithActions = do
     fileResults <- mapM (\int -> checkExists (getFilePathToSave int)) [1 .. 5] --seeing what files already exists
-    let availabilityStrings = zipWith getSlotAvailability [1 .. 5] fileResults
+    let availabilityStrings = zipWith (getSlotAvailability) [1 .. 5] fileResults
     return $ zip (zipWith createSaveButton [1 .. 5] availabilityStrings) --buttons themselves
                  (map actionPutSave [1 .. 5]) --actions with the buttons
     where

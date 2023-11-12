@@ -5,6 +5,7 @@ module SavingAndLoading where
 import State
 import GHC.Generics
 import qualified Data.Aeson as Ae
+import System.IO
 import Imports
 import Control.Exception
 import qualified Data.Set as S
@@ -106,19 +107,19 @@ getStateFromFile num =  do
         Nothing -> return Nothing
         Just s  -> do
             newS <- fromSaveableState s
-            return $ Just $ newS
+            (return $ Just newS)
 
 putStateToFile :: Int -> State -> IO ()
-putStateToFile num state = catch (Ae.encodeFile (getFilePathToSave num) (toSaveableState state)) handler
+putStateToFile num state = catch action handler 
     where
+        action = Ae.encodeFile (getFilePathToSave num) (toSaveableState state)
         handler :: IOException -> IO ()
         handler = \e -> return ()
 
-
-
 checkExists :: FilePath -> IO Bool
 checkExists filePath = catch (do 
-        _ <- readFile filePath
+        file <- openFile filePath ReadMode
+        hClose file 
         return True) 
         handler
     where
