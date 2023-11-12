@@ -12,6 +12,7 @@ import qualified Data.Set as S
 import Enemy
 import Player
 import Projectile
+import System.Random
 import HandleInputs
 
 --playerstate without bitmap data
@@ -65,6 +66,7 @@ fromSaveableState s =
             playerReloadTime = splayerReloadTime p
         }
         in do
+            rando <- initStdGen
             standardPics <- standardPictures
             Right playerBMP <- readBMP "images\\ship32.bmp"
             let playerBMPData = bitmapDataOfBMP playerBMP
@@ -80,7 +82,7 @@ fromSaveableState s =
                                     animations      = [],
                                     downKeys        = S.empty,
                                     inputs          = standardInputs,
-                                    randomG         = getPredictableRandom,
+                                    randomG         = rando,
                                     loadedPictures  = standardPics,
                                     name           = ""}
                 in return newState

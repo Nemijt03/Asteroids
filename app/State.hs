@@ -76,6 +76,7 @@ data LoadedPictures = MkPictures {
 
 standardState :: IO State
 standardState = do
+    rando <- initStdGen
     Right playerBMP <- readBMP "images\\ship32.bmp"
     standardPics <- standardPictures
     let playerBMPData = bitmapDataOfBMP playerBMP
@@ -99,7 +100,7 @@ standardState = do
             downKeys = S.empty,
             mousePosition = (0, 0),
             options = standardOptions,
-            randomG = getPredictableRandom,
+            randomG = rando,
             loadedPictures = standardPics,
             name = ""
 }
