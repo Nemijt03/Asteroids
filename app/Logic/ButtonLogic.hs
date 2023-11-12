@@ -108,9 +108,9 @@ loadingButtonsWithActions = do
                   (zipWith actionGetSave    [1 .. 5] fileResults) --actions with the buttons
      where 
         createLoadButton int string = MkButton (0,250 - 100 * int) (600,80) (greyN 0.4) string 
-        getSlotAvailability int False = "<Save to this slot first>" 
+        getSlotAvailability _   False = "<Save to this slot first>" 
         getSlotAvailability int True  = "save " ++ show int
-        actionGetSave int False = \s -> return s
+        actionGetSave _  False = \s -> return s
         actionGetSave int True = \s -> do
             newS <- getStateFromFile int
             case newS of
