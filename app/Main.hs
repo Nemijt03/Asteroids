@@ -8,9 +8,9 @@ import ScreenLogic
 
 main :: IO ()
 main = do
-    state <- standardState 
+    state <- standardState
     -- display (InWindow "window" (1280, 720) (0,0)) black stateToPicture
-    playIO (InWindow "Asteroids" (1280, 720) (0, 0)) -- Or FullScreen
+    playIO FullScreen -- (InWindow "Asteroids" (1280, 720) (0, 0))
               black            -- Background color
               fps               -- Frames per second
               state            -- Initial state

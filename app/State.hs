@@ -52,7 +52,7 @@ standardPictures = do
     e6 <- loadBMP "images/explosion/6.bmp"
 
     pBullet <- loadBMP "images/fire.bmp"
-    eBullet <- loadBMP "images/fire.bmp"
+    eBullet <- loadBMP "images/fire1.bmp"
     sPic <- loadBMP "images/ship2.bmp"
     aPic <- loadBMP "images/asteroid.bmp"
 

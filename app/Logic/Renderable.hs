@@ -1,4 +1,5 @@
 {-# language NamedFieldPuns #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 module Renderable where
 
 import Imports
@@ -42,7 +43,7 @@ stateToPicture state =
         nameButtonsPic <- map fst nameButtons `translatedRender` state
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
-        let scorePic = Color white $ Text $ show $ score state
+        let scorePic = Translate 300 300 $ Scale 0.4 0.4 $ Color white $ Text $ "Score: " ++ show (score state)
 
         let gameLoopPictures = case gameLoop state of
                                 Paused ->  [pauseButtonsPic]
@@ -99,7 +100,8 @@ instance Renderable Projectile where
         Rotate rotation $ Rotate (-90) pic
             where 
                 rotation = radToDeg $ argV $ normalizeV $ projectileSpeed projectile
-                pic = playerBullet $ loadedPictures s
+                pic | isFromPlayer projectile = playerBullet $ loadedPictures s
+                    | otherwise = saucerBullet $ loadedPictures s
 
     getPosition = projectilePosition
 
@@ -119,12 +121,17 @@ instance Renderable Animation where
 
 instance Renderable Enemy where
     render e s = case e of
-            MkAsteroid{asteroidSize, asteroidSpeed} -> Rotate (rotation asteroidSpeed) $ Scale (scalingFactor asteroidSize) (scalingFactor asteroidSize) picAsteroid
-            MkSaucer{saucerSize, saucerSpeed} -> Rotate (rotation saucerSpeed) $ Scale (scalingFactor saucerSize) (scalingFactor saucerSize) picSaucer
+            MkAsteroid{asteroidSize, asteroidSpeed} -> 
+                Rotate (rotation asteroidSpeed) 
+                $ Scale (asterScF asteroidSize) (asterScF asteroidSize) picAsteroid
+            MkSaucer{saucerSize, saucerSpeed} -> 
+                Rotate (rotation saucerSpeed) 
+                $ Scale (saucerScF saucerSize) (saucerScF saucerSize) picSaucer
         where
-            picSaucer = saucerPicture $ loadedPictures s
-            picAsteroid = asteroidPicture $ loadedPictures s
-            scalingFactor size = enemySize size / 30
+            picSaucer@(Bitmap sBmpData) = saucerPicture $ loadedPictures s
+            picAsteroid@(Bitmap aBmpData) = asteroidPicture $ loadedPictures s
+            asterScF aSize = enemySize aSize / fromIntegral (fst $ bitmapSize aBmpData)
+            saucerScF sSize = enemySize sSize / fromIntegral (fst $ bitmapSize sBmpData)
             enemySize size = unsafeSearch size standardSize
             rotation speed = radToDeg $ argV speed
 
