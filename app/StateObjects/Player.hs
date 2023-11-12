@@ -25,7 +25,10 @@ addAcceleration f ps = ps { playerAcceleration = f PMath.* playerFacing ps}
 stepPlayerState :: PlayerState -> Float -> PlayerState
 stepPlayerState ps _ =   ps {
                             playerPosition = wrap (mapPlus playerPosition playerSpeed ps),
-                            playerSpeed = 0.9 PMath.* mapPlus playerSpeed playerAcceleration ps,
-                            playerAcceleration = 0.8 PMath.* playerAcceleration ps,
+                            playerSpeed = decrementSpeed PMath.* mapPlus playerSpeed playerAcceleration ps,
+                            playerAcceleration = decrementAcc PMath.* playerAcceleration ps,
                             playerReloadTime = playerReloadTime ps - 1
                         }
+                        where
+                            decrementSpeed = 0.9
+                            decrementAcc = 0.8

@@ -1,4 +1,6 @@
 {-# language NamedFieldPuns #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+{-# LANGUAGE InstanceSigs #-}
 module Renderable where
 
 import Imports
@@ -10,7 +12,7 @@ import Animation
 import Enemy
 import State
 import ButtonLogic
-import SavingAndLoading
+
 import Graphics.UI.GLUT (Size(Size))
 import Graphics.UI.GLUT.Fonts
 import LeaderBoardLogic
@@ -42,7 +44,8 @@ stateToPicture state =
         nameButtonsPic <- map fst nameButtons `translatedRender` state
         -- let gameLoopShow = Color (makeColorI 255 255 255 0) $ Text $ show $ gameLoop state
 
-        let scorePic = Color white $ Text $ show $ score state
+        let scorePic = Translate 300 300 $ Scale 0.4 0.4 $ Color white $ Text $ "Score: " ++ show (score state)
+        let livesPic = Translate (-300) 300 $ Scale 0.4 0.4 $ Color white $ Text ("Lives: " ++ show (playerLives (playerState state)))
 
         let gameLoopPictures = case gameLoop state of
                                 Paused ->  [pauseButtonsPic]
@@ -61,7 +64,7 @@ stateToPicture state =
                             projectilesPic,
                             animationsPic,
                             player,
-                            -- gameLoopShow --,
+                            livesPic,
                             scorePic
                         ]
 
@@ -96,19 +99,23 @@ class Renderable a where
 
 instance Renderable Projectile where
     render projectile s =
-        Rotate rotation $ Rotate (-90) pic
+        Rotate rotation $ Rotate standardRotation pic
             where 
                 rotation = radToDeg $ argV $ normalizeV $ projectileSpeed projectile
-                pic = playerBullet $ loadedPictures s
+                pic | isFromPlayer projectile = playerBullet $ loadedPictures s
+                    | otherwise = saucerBullet $ loadedPictures s
+                standardRotation = -90
 
+    getPosition :: Projectile -> (Float, Float)
     getPosition = projectilePosition
 
 
 instance Renderable PlayerState where
     render player _ = Rotate rotation bmp
         where
-            bmp = Rotate 90 $ Bitmap $ playerBitmapData player
+            bmp = Rotate standardRotation $ Bitmap $ playerBitmapData player
             rotation = radToDeg (argV (playerFacing player))
+            standardRotation = 90
 
     getPosition = playerPosition
 
@@ -119,12 +126,17 @@ instance Renderable Animation where
 
 instance Renderable Enemy where
     render e s = case e of
-            MkAsteroid{asteroidSize, asteroidSpeed} -> Rotate (rotation asteroidSpeed) $ Scale (scalingFactor asteroidSize) (scalingFactor asteroidSize) picAsteroid
-            MkSaucer{saucerSize, saucerSpeed} -> Rotate (rotation saucerSpeed) $ Scale (scalingFactor saucerSize) (scalingFactor saucerSize) picSaucer
+            MkAsteroid{asteroidSize, asteroidSpeed} -> 
+                Rotate (rotation asteroidSpeed) 
+                $ Scale (asterScF asteroidSize) (asterScF asteroidSize) picAsteroid
+            MkSaucer{saucerSize, saucerSpeed} -> 
+                Rotate (rotation saucerSpeed) 
+                $ Scale (saucerScF saucerSize) (saucerScF saucerSize) picSaucer
         where
-            picSaucer = saucerPicture $ loadedPictures s
-            picAsteroid = asteroidPicture $ loadedPictures s
-            scalingFactor size = enemySize size / 30
+            picSaucer@(Bitmap sBmpData) = saucerPicture $ loadedPictures s
+            picAsteroid@(Bitmap aBmpData) = asteroidPicture $ loadedPictures s
+            asterScF aSize = enemySize aSize / fromIntegral (fst $ bitmapSize aBmpData)
+            saucerScF sSize = enemySize sSize / fromIntegral (fst $ bitmapSize sBmpData)
             enemySize size = unsafeSearch size standardSize
             rotation speed = radToDeg $ argV speed
 
@@ -140,17 +152,19 @@ instance Renderable Button where
             (MkButton (x, y) (w, h) c s) -> do
                 width <- stringWidth Roman s
                 let offset = fromIntegral $ negate $ width `div` 4
+                    offsety = -20
+                    sF = 0.5
 
                 return $ Translate x y $ Pictures [
                         Color c $ rectangleWire w h,
-                        Translate offset (-20) $ Scale 0.5 0.5 $ Color white $ Text s
+                        Translate offset offsety $ Scale sF sF $ Color white $ Text s
                     ]
 
 -- Picture button is automatically square with size 100x100
             (MkPicButton (x, y) c pic) -> return $ Translate x y $ Pictures [
-                                        Color c $ rectangleWire 100 100,
+                                        Color c $ rectangleWire size size,
                                         pic
-                                    ]
+                                    ] where size = 100
 
 
 instance (Renderable a) => Renderable [a] where

@@ -52,7 +52,7 @@ standardPictures = do
     e6 <- loadBMP "images/explosion/6.bmp"
 
     pBullet <- loadBMP "images/fire.bmp"
-    eBullet <- loadBMP "images/fire.bmp"
+    eBullet <- loadBMP "images/fire1.bmp"
     sPic <- loadBMP "images/ship2.bmp"
     aPic <- loadBMP "images/asteroid.bmp"
 
@@ -157,7 +157,7 @@ shootFromPlayer s | playerReloadTime (playerState s) > 0 = s
 
 
 
-data GameLoop = Running | Paused | GameOver | GameQuitted | OptionsMenu | Leaderboard | RecordScore | Saving | Loading
+data GameLoop = Running | Paused | GameOver | GameQuit | Leaderboard | RecordScore | Saving | Loading
                 deriving (Show, Eq, Enum, Generic)
 
 instance Ae.FromJSON GameLoop
