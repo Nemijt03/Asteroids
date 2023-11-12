@@ -50,7 +50,7 @@ pausingButtonsWithActions = do
 getPlayerNameButtons :: String -> Int -> IO [(Button, State -> IO State)]
 getPlayerNameButtons name score =
      mkButtonsNoActions $ [
-                            MkButton (0, 250) (600, 100) (greyN 0.4) "Input your name in 3 letters:",
+                            MkButton (0, 250) (1000, 100) (greyN 0.4) "Input your name in 3 letters:",
                             MkButton (0, 100) (600, 100) (greyN 0.4) ("Name: " ++ name),
                             MkButton (0, -50) (600, 100) (greyN 0.4) ("Score:" ++ show score)
                           ]
